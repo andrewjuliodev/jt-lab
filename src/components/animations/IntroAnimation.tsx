@@ -1,13 +1,12 @@
 // src/components/animations/IntroAnimation.tsx
 import React, { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 import ScrambleText from './ScrambleText';
 
 interface IntroAnimationProps {
   onComplete: () => void;
   onThemeToggle: (isDarkMode: boolean) => void;
-  onStatsBegin?: () => void; // Callback to trigger stats animation
   darkMode: boolean;
 }
 
@@ -28,71 +27,6 @@ const COLORS = {
   TEXT_DARK: 'rgba(0, 0, 0, 0.7)',
   TEXT_LIGHT: 'rgba(255, 255, 255, 0.7)'
 };
-
-// Animation keyframes
-const glowBurst = keyframes`
-  0% {
-    text-shadow:
-      0 0 2px ${COLORS.GLOW_LIGHTEST},
-      0 0 5px ${COLORS.GLOW_FAINT};
-  }
-  50% {
-    text-shadow:
-      0 0 10px ${COLORS.GLOW_MEDIUM},
-      0 0 20px ${COLORS.GLOW_LIGHT},
-      0 0 30px ${COLORS.GLOW_LIGHTER};
-  }
-  100% {
-    text-shadow:
-      0 0 5px ${COLORS.GLOW_LIGHTER},
-      0 0 8px ${COLORS.GLOW_LIGHTEST};
-  }
-`;
-
-const powerGlowBurst = keyframes`
-  0% {
-    text-shadow:
-      0 0 5px ${COLORS.GLOW_LIGHTER},
-      0 0 10px ${COLORS.GLOW_LIGHTEST};
-  }
-  30% {
-    text-shadow:
-      0 0 30px ${COLORS.GLOW},
-      0 0 60px ${COLORS.GLOW},
-      0 0 90px ${COLORS.GLOW_MEDIUM},
-      0 0 120px ${COLORS.GLOW_MEDIUM};
-  }
-  100% {
-    text-shadow:
-      0 0 15px ${COLORS.GLOW_MEDIUM},
-      0 0 30px ${COLORS.GLOW_LIGHT};
-  }
-`;
-
-const continuousGlowBurst = keyframes`
-  0% {
-    text-shadow:
-      0 0 3px ${COLORS.GLOW_LIGHTEST},
-      0 0 5px ${COLORS.GLOW_FAINT};
-  }
-  50% {
-    text-shadow:
-      0 0 8px ${COLORS.GLOW_MEDIUM},
-      0 0 12px ${COLORS.GLOW_LIGHTER},
-      0 0 16px ${COLORS.GLOW_LIGHTEST};
-  }
-  100% {
-    text-shadow:
-      0 0 3px ${COLORS.GLOW_LIGHTEST},
-      0 0 5px ${COLORS.GLOW_FAINT};
-  }
-`;
-
-// The underscore prefix indicates an unused keyframe, preserving it for future use
-const _fadeIn = keyframes`
-  from { opacity: 0; }
-  to   { opacity: 1; }
-`;
 
 // Styled components
 const Container = styled.div<{ darkMode?: boolean; lightTheme?: boolean }>`
@@ -158,7 +92,7 @@ const CenteredTextContainer = styled.div`
   transform: translate(-50%, -50%);
   width: auto;
   text-align: center;
-  z-index: 20; // Higher z-index to keep above stats
+  z-index: 20;
   
   @media (max-width: 768px) {
     top: 35%;
@@ -199,7 +133,6 @@ const Letter = styled(motion.span)`
 const IntroAnimation: React.FC<IntroAnimationProps> = ({ 
   onComplete, 
   onThemeToggle, 
-  onStatsBegin,
   darkMode 
 }) => {
   // Constants
@@ -217,10 +150,10 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
   // State management - organized by functionality
   // Animation sequence states
   const [retract, setRetract] = useState(false);
-  const [showJT, setShowJT] = useState(false);
+  const [showJT] = useState(false);
   const [showSubtitle, setShowSubtitle] = useState(false);
-  const [fadeOutSubtitle, setFadeOutSubtitle] = useState(false);
-  const [retreatImage, setRetreatImage] = useState(false);
+  const [fadeOutSubtitle] = useState(false);
+  const [retreatImage] = useState(false);
   const [showJulioTompsett, setShowJulioTompsett] = useState(false);
   const [imageVisible, setImageVisible] = useState(false);
   const [startScramble, setStartScramble] = useState(false);
@@ -229,9 +162,10 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
   const [mainJTLabText, setMainJTLabText] = useState(false);
   const [showSubtitleText, setShowSubtitleText] = useState(false);
   const [swishExit, setSwishExit] = useState(false);
+  const [imageExit, setImageExit] = useState(false);
   
   // Theme and appearance states
-  const [lightTheme, setLightTheme] = useState(false);
+  const [lightTheme] = useState(false);
   const [blur, setBlur] = useState<"none"|"blur(5px)">("none");
   const [textPos, setTextPos] = useState<{ top: string; left: string }>({
     top: `calc(50% + ${POSITION.VERTICAL_ADJUSTMENT_TITLE})`,
@@ -239,7 +173,6 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
   });
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [currentGlowLevel, setCurrentGlowLevel] = useState<'full' | 'continuous' | 'transitioning' | 'power' | undefined>(undefined);
-  const [continuousGlowingActive, setContinuousGlowingActive] = useState(false);
 
   // Refs
   const jRef = useRef<HTMLSpanElement>(null);
@@ -263,21 +196,13 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
       setTimeout(() => {
         console.log("[Animation] Switching to continuous glow at:", Date.now());
         setCurrentGlowLevel('continuous');
-        setContinuousGlowingActive(true);
-        
-        // 250ms into the display period, trigger stats animation start
-        setTimeout(() => {
-          // Signal to the parent that stats should begin, but don't complete the intro yet
-          if (onStatsBegin) {
-            onStatsBegin();
-          }
-        }, 250);
         
         // After the extended display period (full 4 seconds from switching to continuous glow)
         // then start exit animation
         setTimeout(() => {
-          // Start the exit animation
+          // Start the exit animation for all elements simultaneously
           setSwishExit(true);
+          setImageExit(true);
           
           // Delay the completion callback until after the exit animation
           setTimeout(onComplete, 900);
@@ -431,14 +356,19 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
           y: "100vh"
         }}
         animate={{ 
-          opacity: retreatImage ? 0 : (imageVisible ? 1 : 0),
-          y: retreatImage ? "100vh" : (imageVisible ? 0 : "100vh")
+          opacity: imageExit ? 0 : (retreatImage ? 0 : (imageVisible ? 1 : 0)),
+          y: imageExit ? "-100vh" : (retreatImage ? "100vh" : (imageVisible ? 0 : "100vh")),
+          x: imageExit ? "100vw" : 0
         }}
         transition={{ 
           opacity: { duration: 0.5, ease: "easeInOut" }, // Faster opacity transition
           y: { 
-            duration: 0.8, // Faster slide-in (was 1.5s)
+            duration: imageExit ? 0.8 : 0.8, // Faster slide-in (was 1.5s)
             ease: "easeOut"
+          },
+          x: {
+            duration: imageExit ? 0.8 : 0,
+            ease: "easeIn"
           }
         }}
       />

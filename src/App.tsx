@@ -1,7 +1,6 @@
 // src/App.tsx
 import React, { useState, useEffect } from 'react';
 import IntroAnimation from './components/animations/IntroAnimation';
-import CombinedStatsAnimation from './components/animations/CombinedStatsAnimation';
 import Header from './components/Header';
 import ServicesSection from './components/sections/ServicesSection';
 import { PortfolioSection, ContactSection, AboutSection } from './components/sections/DummySections';
@@ -23,8 +22,6 @@ const Content = styled.div<{ $introComplete: boolean }>`
 const App: React.FC = () => {
   // Animation sequence state
   const [introComplete, setIntroComplete] = useState(false);
-  const [statsActive, setStatsActive] = useState(false);
-  const [statsComplete, setStatsComplete] = useState(false);
   const [mainContentVisible, setMainContentVisible] = useState(false);
   
   const [darkMode, setDarkMode] = useState(false);
@@ -44,46 +41,13 @@ const App: React.FC = () => {
     localStorage.setItem('darkMode', isDarkMode ? 'true' : 'false');
   };
   
-  // Handle animation sequence
-  const handleStatsBegin = () => {
-    // This is called 250ms into the JT Lab display period
-    setStatsActive(true);
-  };
-  
+  // Handle animation completion
   const handleIntroComplete = () => {
-    // This is called after the entire intro + JT Lab exit animation
     setIntroComplete(true);
-    
-    // If stats are not already complete, they should finish soon
-    if (!statsComplete) {
-      // Give stats a little more time to complete if needed
-      setTimeout(() => {
-        setStatsComplete(true);
-        setTimeout(() => {
-          setMainContentVisible(true);
-          setActiveSection('services');
-        }, 300);
-      }, 500);
-    } else {
-      // Stats are already complete, show main content
-      setTimeout(() => {
-        setMainContentVisible(true);
-        setActiveSection('services');
-      }, 300);
-    }
-  };
-  
-  const handleStatsComplete = () => {
-    setStatsComplete(true);
-    
-    // Only proceed to main content if intro is also complete
-    if (introComplete) {
-      setTimeout(() => {
-        setMainContentVisible(true);
-        setActiveSection('services');
-      }, 300);
-    }
-    // Otherwise, waiting for intro to complete
+    setTimeout(() => {
+      setMainContentVisible(true);
+      setActiveSection('services');
+    }, 300);
   };
 
   // Set initial body class when the component mounts
@@ -148,21 +112,11 @@ const App: React.FC = () => {
           <IntroAnimation 
             onComplete={handleIntroComplete}
             onThemeToggle={handleThemeToggle}
-            onStatsBegin={handleStatsBegin}
             darkMode={darkMode}
           />
         )}
         
-        {/* Show combined stats animation */}
-        {statsActive && !mainContentVisible && (
-          <CombinedStatsAnimation 
-            onComplete={handleStatsComplete}
-            darkMode={darkMode}
-            showWithJTLab={!introComplete}
-          />
-        )}
-        
-        {/* Show header and content after both animations complete */}
+        {/* Show header and content after animation completes */}
         {mainContentVisible && (
           <>
             <Header 
