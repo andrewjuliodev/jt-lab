@@ -6,6 +6,8 @@ import ScrambleText from './ScrambleText';
 
 interface IntroAnimationProps {
   onComplete: () => void;
+  onThemeToggle: (isDarkMode: boolean) => void;
+  darkMode: boolean;
 }
 
 // Constants
@@ -118,24 +120,6 @@ const drawBorder = keyframes`
 const fadeIn = keyframes`
   from { opacity: 0; }
   to   { opacity: 1; }
-`;
-
-const windSweepIn = keyframes`
-  0% {
-    opacity: 0;
-    transform: translateX(-100px) skewX(10deg);
-    letter-spacing: -5px;
-  }
-  30% {
-    opacity: 0.5;
-  }
-  60% {
-    letter-spacing: 0;
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0) skewX(0);
-  }
 `;
 
 // Styled components
@@ -395,118 +379,6 @@ const ThemeToggle = styled.button<{ darkMode?: boolean; show?: boolean }>`
   }
 `;
 
-const Header = styled.header`
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%) translateY(-50%);
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  animation: ${fadeIn} 1s ease forwards;
-  z-index: 1000;
-  transition: top 0.8s ease-in-out, color 0.8s ease-in-out;
-  margin-left: -40px;
-`;
-
-const NavList = styled.ul<{ mobileMenuOpen?: boolean; darkMode?: boolean }>`
-  display: flex;
-  gap: 3rem;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  margin-left: 40px;
-  font-family: "Montserrat", sans-serif;
-  font-weight: 200;
-  transition: color 0.8s ease-in-out;
-  
-  @media (max-width: 768px) {
-    position: fixed;
-    top: 60px;
-    right: ${props => props.mobileMenuOpen ? '0' : '-100%'};
-    flex-direction: column;
-    gap: 1.5rem;
-    background: ${props => props.darkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.7)'};
-    width: 70%;
-    max-width: 300px;
-    height: calc(100vh - 60px);
-    padding: 2rem;
-    margin-left: 0;
-    transition: right 0.3s ease-in-out, background-color 0.8s ease-in-out;
-    align-items: center;
-    justify-content: flex-start;
-  }
-`;
-
-const NavItem = styled.li`
-  position: relative;
-  margin: 0 5px;
-  
-  @media (max-width: 768px) {
-    margin: 10px 0;
-    width: 100%;
-    text-align: center;
-  }
-`;
-
-const NavLink = styled.a<{ darkMode?: boolean }>`
-  color: ${props => props.darkMode ? '#fff' : '#fff'};
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 1.25rem;
-  transition: text-shadow 0.3s ease, color 0.8s ease-in-out;
-  padding: 8px 16px;
-  
-  &:hover {
-    animation: ${css`${glowBurst} 1s ease-out infinite`};
-  }
-  
-  @media (max-width: 768px) {
-    color: #fff;
-    font-size: 1.5rem;
-    padding: 12px 20px;
-    display: inline-block;
-  }
-`;
-
-const BurgerMenu = styled.button<{ darkMode?: boolean; open?: boolean }>`
-  display: none;
-  position: fixed;
-  top: 30px;
-  right: 10%;
-  transform: translateY(-50%);
-  width: 40px;
-  height: 40px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  z-index: 1002;
-  
-  @media (max-width: 768px) {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    align-items: center;
-  }
-`;
-
-const BurgerLine = styled.span<{ darkMode?: boolean; open?: boolean; lineIndex?: number }>`
-  width: 30px;
-  height: 3px;
-  background-color: ${props => props.darkMode ? '#fff' : '#333'};
-  transition: all 0.3s ease-in-out;
-  position: relative;
-  
-  transform: ${props => {
-    if (props.open && props.lineIndex === 1) return 'rotate(45deg) translate(5px, 5px)';
-    if (props.open && props.lineIndex === 3) return 'rotate(-45deg) translate(5px, -5px)';
-    if (props.open && props.lineIndex === 2) return 'opacity: 0';
-    return 'none';
-  }};
-  
-  opacity: ${props => props.open && props.lineIndex === 2 ? 0 : 1};
-`;
-
 // SVG Icons
 const SunIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -529,7 +401,7 @@ const MoonIcon = () => (
 );
 
 // Main component
-const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete }) => {
+const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete, onThemeToggle, darkMode }) => {
   // Constants
   const name = "JulioTompsett's";
   const ANIMATION_TIMINGS = {
@@ -541,7 +413,6 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete }) => {
     SLIDE_TO_HEADER: 5350,
     GLASSMORPHISM: 5150,
     SHOW_TOGGLE: 5250,
-    SHOW_NAV: 5450,
     HEADER_BORDER: 5550,
     HEADER_GLOW: 6550,
     ANIMATION_COMPLETE: 7350
@@ -572,7 +443,6 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete }) => {
   const [glassmorphism, setGlassmorphism] = useState(false);
 
   // Theme and appearance states
-  const [darkMode, setDarkMode] = useState(false);
   const [lightTheme, setLightTheme] = useState(false);
   const [showToggle, setShowToggle] = useState(false);
   const [tOffset, setTOffset] = useState(0);
@@ -581,7 +451,6 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete }) => {
     top: `calc(50% + ${POSITION.VERTICAL_ADJUSTMENT_TITLE})`,
     left: POSITION.HORIZONTAL_ADJUSTMENT,
   });
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [currentGlowLevel, setCurrentGlowLevel] = useState<'full' | 'continuous' | 'transitioning' | 'power' | undefined>(undefined);
   const [subtleGlow, setSubtleGlow] = useState(false);
@@ -592,21 +461,6 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete }) => {
   const jRef = useRef<HTMLSpanElement>(null);
   const webDevRef = useRef<HTMLDivElement | null>(null);
   const lettersRef = useRef<HTMLSpanElement[]>([]);
-
-  // Direct keyboard shortcut for theme toggle
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'D' && e.ctrlKey) {
-        console.log("Direct theme toggle triggered");
-        setDarkMode(prevMode => !prevMode);
-        setLightTheme(prevMode => !prevMode);
-        setThemeToggled(true);
-      }
-    };
-    
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
 
   // Helper functions
   const leftOffset = POSITION.HORIZONTAL_ADJUSTMENT;
@@ -630,15 +484,13 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete }) => {
   const toggleTheme = () => {
     console.log("Theme toggle clicked, current dark mode:", darkMode);
     
-    setCurrentGlowLevel('continuous');
-    setContinuousGlowingActive(true);
-    
     const newDarkMode = !darkMode;
-    setDarkMode(newDarkMode);
+    onThemeToggle(newDarkMode);
     setLightTheme(!newDarkMode);
     setThemeToggled(true);
     
-    localStorage.setItem('darkMode', newDarkMode ? 'true' : 'false');
+    setCurrentGlowLevel('continuous');
+    setContinuousGlowingActive(true);
     
     setHeaderBorderVisible(true);
     setBulletAnimationInProgress(true);
@@ -665,10 +517,6 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete }) => {
         setContinuousGlowingActive(true);
       }, 2000);
     }, 100);
-  };
-  
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
   };
 
   const handleScrambleComplete = () => {
@@ -698,10 +546,6 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete }) => {
   // Effect for screen resize
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth > 768 && mobileMenuOpen) {
-        setMobileMenuOpen(false);
-      }
-      
       if (window.innerWidth <= 768) {
         setTextPos({
           top: `calc(35% + ${POSITION.VERTICAL_ADJUSTMENT_TITLE})`,
@@ -721,18 +565,6 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete }) => {
     
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [mobileMenuOpen]);
-
-  // Effect for localStorage theme preference
-  useEffect(() => {
-    const savedDarkMode = localStorage.getItem('darkMode');
-    console.log("Loading theme preference from localStorage:", savedDarkMode);
-    
-    if (savedDarkMode === 'true') {
-      console.log("Setting dark mode based on localStorage");
-      setDarkMode(true);
-      setLightTheme(false);
-    }
   }, []);
 
   // Effect for dark mode changes
@@ -746,11 +578,7 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete }) => {
         setContinuousGlowingActive(true);
       }
     }
-    
-    if (themeToggled) {
-      localStorage.setItem('darkMode', darkMode ? 'true' : 'false');
-    }
-  }, [darkMode, slideToHeader, themeToggled, bulletAnimationInProgress]);
+  }, [darkMode, slideToHeader, bulletAnimationInProgress]);
 
   // Effect for calculating text offsets during retraction
   useEffect(() => {
@@ -824,10 +652,6 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete }) => {
         setShowToggle(true);
         console.log("Toggle button should be visible now");
       }, ANIMATION_TIMINGS.SHOW_TOGGLE),
-      
-      setTimeout(() => {
-        setShowJT(true);
-      }, ANIMATION_TIMINGS.SHOW_NAV),
       
       setTimeout(() => {
         setHeaderBorderVisible(true);
@@ -934,18 +758,6 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete }) => {
       >
         {darkMode ? <SunIcon /> : <MoonIcon />}
       </ThemeToggle>
-      
-      {/* Burger Menu - only visible on mobile */}
-      <BurgerMenu 
-        darkMode={darkMode}
-        open={mobileMenuOpen}
-        onClick={toggleMobileMenu}
-        aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-      >
-        <BurgerLine darkMode={darkMode} open={mobileMenuOpen} lineIndex={1} />
-        <BurgerLine darkMode={darkMode} open={mobileMenuOpen} lineIndex={2} />
-        <BurgerLine darkMode={darkMode} open={mobileMenuOpen} lineIndex={3} />
-      </BurgerMenu>
       
       {/* Header container with bullet and border */}
       <HeaderContainer glassmorphism={glassmorphism} darkMode={darkMode}>
@@ -1203,20 +1015,6 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete }) => {
             Landing Sites | SPA | PWA | Web | Mobile Optimized
           </motion.div>
         </>
-      )}
-
-      {/* Header with navigation */}
-      {showJT && (
-        <Header style={{ 
-          top: slideToHeader ? "30px" : textPos.top
-        }}>
-          <NavList mobileMenuOpen={mobileMenuOpen} darkMode={darkMode}>
-            <NavItem><NavLink darkMode={darkMode} href="#services">Services</NavLink></NavItem>
-            <NavItem><NavLink darkMode={darkMode} href="#portfolio">Portfolio</NavLink></NavItem>
-            <NavItem><NavLink darkMode={darkMode} href="#contact">Contact</NavLink></NavItem>
-            <NavItem><NavLink darkMode={darkMode} href="#about">About</NavLink></NavItem>
-          </NavList>
-        </Header>
       )}
     </Container>
   );
