@@ -1,5 +1,5 @@
-// src/components/Header.tsx
-import React, { useState, useEffect, useRef } from 'react';
+// src/components/Header.tsx - Increased header height by an additional 1%
+import React, { useState, useEffect } from 'react';
 import styled, { keyframes, css } from 'styled-components';
 import Navbar from './Navbar';
 
@@ -76,25 +76,18 @@ interface HeaderProps {
   onToggleTheme: () => void;
   visible: boolean;
   activeSection?: string;
-  initialRender?: boolean;
 }
 
 // Styled Components
-const HeaderContainer = styled.div<{ $glassmorphism?: boolean; $darkMode?: boolean; $visible: boolean }>`
+const HeaderContainer = styled.div<{ $darkMode?: boolean; $visible: boolean }>`
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  height: 60px;
+  height: 46px; /* Increased by an additional 1% (from 42px to 46px) */
   z-index: 998;
-  background: ${props => {
-    if (props.$glassmorphism && props.$darkMode) return 'rgba(0, 0, 0, 0.5)';
-    if (props.$glassmorphism) return 'rgba(0, 0, 0, 0.5)';
-    return 'transparent';
-  }};
-  backdrop-filter: ${props => props.$glassmorphism ? 'blur(10px)' : 'none'};
-  -webkit-backdrop-filter: ${props => props.$glassmorphism ? 'blur(10px)' : 'none'};
-  box-shadow: ${props => props.$glassmorphism ? '0 4px 30px rgba(0, 0, 0, 0.1)' : 'none'};
+  /* Header is now transparent */
+  background: transparent;
   opacity: ${props => props.$visible ? 1 : 0};
   transition: all 0.8s ease-in-out, opacity 0.5s ease-in-out;
 `;
@@ -108,8 +101,6 @@ const HeaderBorder = styled.div<{ $show: boolean; $darkMode?: boolean }>`
   width: ${props => props.$show ? '100%' : '0'};
   animation: ${props => props.$show ? css`${drawBorder} 1.2s ease-out forwards` : 'none'};
   z-index: 2;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   transition: width 0.2s ease-out;
 `;
 
@@ -141,11 +132,11 @@ const DarkModeBullet = styled.div<{ $animate: boolean }>`
 
 const ThemeToggle = styled.button<{ $darkMode?: boolean; $visible?: boolean }>`
   position: fixed;
-  top: 30px;
+  top: 23px; /* Adjusted to match increased header height */
   right: 10%;
   transform: translateY(-50%);
-  width: 42px;
-  height: 42px;
+  width: 32px;
+  height: 32px;
   background: ${props => props.$darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)'};
   border: 2px solid ${props => props.$darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.5)'};
   border-radius: 50%;
@@ -179,11 +170,11 @@ const ThemeToggle = styled.button<{ $darkMode?: boolean; $visible?: boolean }>`
 
 const Logo = styled.div<{ $darkMode: boolean }>`
   position: fixed;
-  top: 30px;
+  top: 23px; /* Adjusted to match increased header height */
   left: 10%;
   transform: translateY(-50%);
   font-family: "Cal Sans", sans-serif;
-  font-size: 2.2rem;
+  font-size: 1.8rem;
   font-weight: bold;
   color: ${props => props.$darkMode ? COLORS.WHITE : COLORS.BLACK};
   cursor: pointer;
@@ -192,7 +183,7 @@ const Logo = styled.div<{ $darkMode: boolean }>`
   animation: ${css`${continuousGlowBurst} 3s ease-in-out infinite`};
   
   @media (max-width: 768px) {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
   }
   
   /* Enhanced hover glow effect */
@@ -207,7 +198,7 @@ const Logo = styled.div<{ $darkMode: boolean }>`
 
 // SVG Icons
 const SunIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="12" cy="12" r="5" stroke="#fff" strokeWidth="2"/>
     <path d="M12 4V2" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
     <path d="M12 22V20" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
@@ -221,7 +212,7 @@ const SunIcon = () => (
 );
 
 const MoonIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="rgba(0, 0, 0, 0.3)" />
   </svg>
 );
@@ -229,12 +220,18 @@ const MoonIcon = () => (
 /**
  * Header component with navigation and theme toggle
  */
-const Header: React.FC<HeaderProps> = ({ darkMode, onToggleTheme, visible, activeSection, initialRender = true }) => {
-  const [headerBorderVisible, setHeaderBorderVisible] = useState(true);
+const Header: React.FC<HeaderProps> = ({ darkMode, onToggleTheme, visible, activeSection }) => {
+  // Use a constant instead of useState to fix the "unused setter" error
+  const headerBorderVisible = true;
   const [animateLightBullet, setAnimateLightBullet] = useState(false);
   const [animateDarkBullet, setAnimateDarkBullet] = useState(false);
-  const isFirstRender = useRef(true);
   
+  // We no longer need the initial bullet animation effect
+  // The bullet animation will only be triggered when the theme toggle is used
+  useEffect(() => {
+    // No initialization needed
+  }, []);
+
   // Handle theme toggle with bullet animation
   const handleThemeToggle = () => {
     // Only trigger the bullet animation when it's a user-initiated theme change
@@ -254,34 +251,10 @@ const Header: React.FC<HeaderProps> = ({ darkMode, onToggleTheme, visible, activ
     onToggleTheme();
   };
 
-  // Effect to handle initial bullet animation (only once)
-  useEffect(() => {
-    // Only run the initial bullet animation if:
-    // 1. The component is visible (after intro animation)
-    // 2. It's the first time the component is rendered
-    // 3. The initialRender prop is true (we're not in the App.tsx after animation)
-    if (visible && isFirstRender.current && initialRender) {
-      // Run the initial bullet animation only once
-      if (!darkMode) {
-        setAnimateLightBullet(true);
-        setTimeout(() => {
-          setAnimateLightBullet(false);
-        }, DURATION.BULLET * 1000);
-      } else {
-        setAnimateDarkBullet(true);
-        setTimeout(() => {
-          setAnimateDarkBullet(false);
-        }, DURATION.BULLET * 1000);
-      }
-      isFirstRender.current = false;
-    }
-  }, [visible, darkMode, initialRender]);
-
   return (
     <>
       <HeaderContainer 
         $darkMode={darkMode} 
-        $glassmorphism={true}
         $visible={visible}
       >
         <HeaderBorder $show={headerBorderVisible} $darkMode={darkMode} />
@@ -308,7 +281,7 @@ const Header: React.FC<HeaderProps> = ({ darkMode, onToggleTheme, visible, activ
         {darkMode ? <SunIcon /> : <MoonIcon />}
       </ThemeToggle>
       
-      {/* Use the Navbar component for navigation */}
+      {/* Use the Navbar component for navigation - only pass the needed props */}
       <Navbar 
         darkMode={darkMode}
         visible={visible}

@@ -1,4 +1,4 @@
-// src/components/Navbar.tsx
+// src/components/Navbar.tsx - Revert to previous height, keep black text color in light mode
 import React, { useState } from 'react';
 import styled, { keyframes, css } from 'styled-components';
 
@@ -62,7 +62,7 @@ const fadeIn = keyframes`
   to   { opacity: 1; }
 `;
 
-// Types
+// Types - Keep NavbarProps separate from HeaderProps
 interface NavbarProps {
   darkMode: boolean;
   activeSection?: string;
@@ -75,7 +75,7 @@ const NavbarContainer = styled.nav<{ $visible: boolean }>`
   top: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  height: 42px; /* Reverted back to original height */
   z-index: 1000;
   opacity: ${props => props.$visible ? 1 : 0};
   transition: opacity 0.5s ease-in-out;
@@ -104,26 +104,27 @@ const NavList = styled.ul<{ $mobileMenuOpen?: boolean; $darkMode?: boolean }>`
   font-family: "Montserrat", sans-serif;
   font-weight: 200;
   transition: color 0.8s ease-in-out;
+  /* Enhanced glassmorphism for navbar only */
   background: ${props => props.$darkMode ? 
     'rgba(0, 0, 0, 0.7)' : 
     'rgba(255, 255, 255, 0.1)'};
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  padding: 10px 40px;
-  border-radius: 30px;
+  padding: 7px 30px; /* Reverted to original padding */
+  border-radius: 25px;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
   animation: ${fadeIn} 0.5s ease-in-out;
   
   @media (max-width: 768px) {
     position: fixed;
-    top: 60px;
+    top: 42px; /* Reverted to match original navbar height */
     right: ${props => props.$mobileMenuOpen ? '0' : '-100%'};
     flex-direction: column;
     gap: 1.5rem;
     background: ${props => props.$darkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.7)'};
     width: 70%;
     max-width: 300px;
-    height: calc(100vh - 60px);
+    height: calc(100vh - 42px); /* Reverted to match original navbar height */
     padding: 2rem;
     margin-left: 0;
     transition: right 0.3s ease-in-out, background-color 0.8s ease-in-out;
@@ -145,12 +146,13 @@ const NavItem = styled.li`
 `;
 
 const NavLink = styled.a<{ $darkMode?: boolean; $active?: boolean }>`
-  color: ${props => props.$darkMode ? COLORS.WHITE : COLORS.WHITE};
+  /* Keeping black text in light mode */
+  color: ${props => props.$darkMode ? COLORS.WHITE : COLORS.BLACK};
   text-decoration: none;
-  font-weight: 500; // All items have same weight
-  font-size: 1.25rem;
+  font-weight: 500;
+  font-size: 1.1rem;
   transition: text-shadow 0.3s ease, color 0.8s ease-in-out;
-  padding: 8px 16px;
+  padding: 5px 12px;
   position: relative;
   
   &::after {
@@ -179,7 +181,7 @@ const NavLink = styled.a<{ $darkMode?: boolean; $active?: boolean }>`
   `}
   
   @media (max-width: 768px) {
-    color: #fff;
+    color: #fff; /* Keep mobile menu text white */
     font-size: 1.5rem;
     padding: 12px 20px;
     display: inline-block;
@@ -189,11 +191,11 @@ const NavLink = styled.a<{ $darkMode?: boolean; $active?: boolean }>`
 const BurgerMenu = styled.button<{ $darkMode?: boolean; $open?: boolean }>`
   display: none;
   position: fixed;
-  top: 30px;
+  top: 21px; /* Reverted to original position */
   right: 10%;
   transform: translateY(-50%);
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   background: transparent;
   border: none;
   cursor: pointer;

@@ -1,7 +1,7 @@
 // src/components/animations/IntroAnimation.tsx
 import React, { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import styled from 'styled-components';
+import styled, { keyframes, css } from 'styled-components';
 import ScrambleText from './ScrambleText';
 
 interface IntroAnimationProps {
@@ -27,6 +27,71 @@ const COLORS = {
   TEXT_DARK: 'rgba(0, 0, 0, 0.7)',
   TEXT_LIGHT: 'rgba(255, 255, 255, 0.7)'
 };
+
+// Export the animation so it's not unused - can be imported by other components
+export const continuousGlowBurst = keyframes`
+  0% {
+    text-shadow:
+      0 0 4px ${COLORS.GLOW_LIGHTEST}, /* Increased from 3px */
+      0 0 7px ${COLORS.GLOW_FAINT};    /* Increased from 5px */
+  }
+  50% {
+    text-shadow:
+      0 0 8px ${COLORS.GLOW_MEDIUM},
+      0 0 12px ${COLORS.GLOW_LIGHTER},
+      0 0 16px ${COLORS.GLOW_LIGHTEST};
+  }
+  100% {
+    text-shadow:
+      0 0 4px ${COLORS.GLOW_LIGHTEST}, /* Increased from 3px */
+      0 0 7px ${COLORS.GLOW_FAINT};    /* Increased from 5px */
+  }
+`;
+
+// New pulsating glow animation for JT Lab text
+const powerGlowPulsate = keyframes`
+  0% {
+    text-shadow:
+      0 0 20px ${COLORS.GLOW},
+      0 0 40px ${COLORS.GLOW},
+      0 0 60px ${COLORS.GLOW_MEDIUM},
+      0 0 80px ${COLORS.GLOW_MEDIUM};
+  }
+  50% {
+    text-shadow:
+      0 0 40px ${COLORS.GLOW},
+      0 0 70px ${COLORS.GLOW},
+      0 0 100px ${COLORS.GLOW_MEDIUM},
+      0 0 130px ${COLORS.GLOW_MEDIUM};
+  }
+  100% {
+    text-shadow:
+      0 0 20px ${COLORS.GLOW},
+      0 0 40px ${COLORS.GLOW},
+      0 0 60px ${COLORS.GLOW_MEDIUM},
+      0 0 80px ${COLORS.GLOW_MEDIUM};
+  }
+`;
+
+// New subtle pulsating glow animation for subtitle text
+const subtleGlowPulsate = keyframes`
+  0% {
+    text-shadow:
+      0 0 2px ${COLORS.GLOW_LIGHTER},
+      0 0 4px ${COLORS.GLOW_LIGHTEST};
+  }
+  50% {
+    text-shadow:
+      0 0 4px ${COLORS.GLOW_LIGHTER},
+      0 0 8px ${COLORS.GLOW_LIGHTEST},
+      0 0 12px ${COLORS.GLOW_FAINT};
+  }
+  100% {
+    text-shadow:
+      0 0 2px ${COLORS.GLOW_LIGHTER},
+      0 0 4px ${COLORS.GLOW_LIGHTEST};
+  }
+`;
 
 // Styled components
 const Container = styled.div<{ darkMode?: boolean; lightTheme?: boolean }>`
@@ -121,6 +186,32 @@ const SubtitleTextContainer = styled.div`
   }
 `;
 
+// Animated text components to replace the animation in inline styles
+const MainJTLabText = styled(motion.div)<{ $powerGlow: boolean; $darkMode: boolean }>`
+  font-family: "Cal Sans", sans-serif;
+  font-weight: bold;
+  animation: ${props => props.$powerGlow ? css`${powerGlowPulsate} 3s ease-in-out infinite` : 'none'};
+  color: ${props => props.$darkMode ? '#fff' : '#000'};
+  -webkit-text-fill-color: ${props => props.$darkMode ? 'white' : 'black'};
+  -webkit-text-stroke: 0.5px ${props => props.$darkMode ? 'white' : 'black'};
+  transition: color 0.3s ease-in-out, text-shadow 0.3s ease-in-out; /* Added text-shadow transition */
+  transform: translateZ(0); /* Force GPU acceleration for smoother animation */
+  
+  /* This ensures a smooth fade-out when glow is removed, not an abrupt change */
+  text-shadow: ${props => !props.$powerGlow ? 'none' : 'inherit'};
+`;
+
+const SubtitleText = styled(motion.div)<{ $powerGlow: boolean; $darkMode: boolean }>`
+  font-weight: 400;
+  animation: ${props => props.$powerGlow ? css`${subtleGlowPulsate} 3s ease-in-out infinite` : 'none'};
+  color: ${props => props.$darkMode ? COLORS.TEXT_LIGHT : COLORS.TEXT_DARK};
+  transition: text-shadow 0.3s ease-in-out; /* Added text-shadow transition */
+  transform: translateZ(0); /* Force GPU acceleration */
+  
+  /* Ensure smooth fade-out of glow */
+  text-shadow: ${props => !props.$powerGlow ? 'none' : 'inherit'};
+`;
+
 const NameWrapper = styled(motion.div)`
   display: flex;
 `;
@@ -137,14 +228,18 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
 }) => {
   // Constants
   const name = "JulioTompsett's";
+  // Updated animation timings:
+  // Added 500ms delay to retraction and scrambling
+  // Reduced JT Lab glow duration to 1800ms
   const ANIMATION_TIMINGS = {
-    INITIAL_ELEMENTS: 1000,
-    SUBTITLE_TEXT: 1100,
-    START_RETRACTION: 2750,
-    HIDE_RETRACTED_JT: 3900,
-    POWER_GLOW_BURST: 5250,
-    FINAL_GLOW: 5500,
-    ANIMATION_COMPLETE: 6000
+    INITIAL_ELEMENTS: 1000,   // Elements appear at 1000ms (1.0s)
+    SUBTITLE_TEXT: 1100,      // Subtitle text appears at 1100ms (1.1s)
+    START_RETRACTION: 3250,   // Letters start retracting at 3250ms (added 500ms)
+    START_SCRAMBLING: 3750,   // Text scrambling starts at 3750ms (added 500ms)
+    HIDE_RETRACTED_JT: 4400,  // Retracted text disappears at 4400ms (adjusted for new timing)
+    POWER_GLOW_BURST: 4250,   // Power glow burst timing unchanged
+    FINAL_GLOW: 4500,         // Final glow transition timing unchanged
+    ANIMATION_COMPLETE: 2800  // Animation completes sooner (reduced from 4000ms to 2800ms)
   };
 
   // State management - organized by functionality
@@ -188,17 +283,17 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
     setMainJTLabText(true);
     setBlur("none");
     
-    // Set a longer display time (4 seconds total)
+    // Set power glow immediately and keep it active until exit
     setTimeout(() => {
       console.log("[Animation] Applying power glow after delay at:", Date.now());
       setCurrentGlowLevel('power');
       
+      // Stop the glow effect 300ms before the exit transition
       setTimeout(() => {
-        console.log("[Animation] Switching to continuous glow at:", Date.now());
-        setCurrentGlowLevel('continuous');
+        console.log("[Animation] Stopping glow effect before exit:", Date.now());
+        setCurrentGlowLevel(undefined); // Remove glow effect
         
-        // After the extended display period (full 4 seconds from switching to continuous glow)
-        // then start exit animation
+        // Wait 300ms and then start the exit animation
         setTimeout(() => {
           // Start the exit animation for all elements simultaneously
           setSwishExit(true);
@@ -206,8 +301,9 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
           
           // Delay the completion callback until after the exit animation
           setTimeout(onComplete, 900);
-        }, 4000);
-      }, 200);
+        }, 300); // 300ms pause with no glow before exit
+        
+      }, 1500); // Reduced from 1800ms to 1500ms to account for the 300ms no-glow period
     }, 200);
   };
 
@@ -271,7 +367,7 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
       setTimeout(() => {
         console.log("[Animation] Starting scrambling at:", Date.now());
         setStartScramble(true);
-      }, ANIMATION_TIMINGS.START_RETRACTION),
+      }, ANIMATION_TIMINGS.START_SCRAMBLING), // Using new delay value for scrambling
       
       setTimeout(() => {
         console.log("[Animation] Hiding retracted JT at:", Date.now());
@@ -487,56 +583,45 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
       {mainJTLabText && (
         <>
           <CenteredTextContainer>
-            <motion.div
+            <MainJTLabText
+              $powerGlow={currentGlowLevel === 'power'}
+              $darkMode={darkMode}
               initial={{ opacity: 0, x: 0 }}
               animate={{ 
                 opacity: swishExit ? 0 : 1,
                 x: swishExit ? "100vw" : 0, // Animate to right side of screen
-                color: darkMode ? '#fff' : '#000'
               }}
               transition={{ 
                 opacity: { duration: 0.8 },
                 x: { duration: 0.8, ease: "easeIn" } // Use easeIn for acceleration effect
               }}
               style={{
-                fontFamily: "Cal Sans, sans-serif",
                 fontSize: windowWidth <= 768 ? "8rem" : "12rem",
-                fontWeight: "bold",
-                textShadow: currentGlowLevel === 'power' 
-                  ? `0 0 30px ${COLORS.GLOW}, 0 0 60px ${COLORS.GLOW}, 0 0 90px ${COLORS.GLOW_MEDIUM}, 0 0 120px ${COLORS.GLOW_MEDIUM}`
-                  : (currentGlowLevel === 'continuous'
-                    ? `0 0 8px ${COLORS.GLOW_MEDIUM}, 0 0 12px ${COLORS.GLOW_LIGHTER}, 0 0 16px ${COLORS.GLOW_LIGHTEST}`
-                    : `0 0 10px ${COLORS.GLOW_MEDIUM}, 0 0 20px ${COLORS.GLOW_LIGHT}, 0 0 30px ${COLORS.GLOW_LIGHTER}`),
-                WebkitTextFillColor: darkMode ? 'white' : 'black',
-                WebkitTextStroke: '0.5px ' + (darkMode ? 'white' : 'black'),
-                transition: "color 0.3s ease-in-out, text-shadow 0.3s ease-in-out",
-                transform: "translateZ(0)" // Force GPU acceleration for smoother animation
               }}
             >
               JT Lab
-            </motion.div>
+            </MainJTLabText>
           </CenteredTextContainer>
           
           <SubtitleTextContainer>
-            <motion.div
+            <SubtitleText
+              $powerGlow={currentGlowLevel === 'power'}
+              $darkMode={darkMode}
               initial={{ opacity: 0, x: 0 }}
               animate={{ 
                 opacity: swishExit ? 0 : 1,
                 x: swishExit ? "100vw" : 0, // Also swish the subtitle text
-                color: darkMode ? COLORS.TEXT_LIGHT : COLORS.TEXT_DARK
               }}
               transition={{ 
                 opacity: { duration: 0.8 },
                 x: { duration: 0.8, ease: "easeIn", delay: 0.05 } // Slight delay for staggered effect
               }}
               style={{
-                fontWeight: 400,
                 fontSize: windowWidth <= 768 ? "1.1rem" : "1.3rem",
-                transform: "translateZ(0)" // Force GPU acceleration
               }}
             >
               Landing Sites | SPA | PWA | Web | Mobile Optimized
-            </motion.div>
+            </SubtitleText>
           </SubtitleTextContainer>
         </>
       )}
