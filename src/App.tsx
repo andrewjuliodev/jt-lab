@@ -4,9 +4,8 @@ import IntroAnimation from './components/animations/IntroAnimation';
 import Header from './components/Header';
 import ServicesSection from './components/sections/ServicesSection';
 import { PortfolioSection, ContactSection, AboutSection } from './components/sections/DummySections';
-import VerticalSectionIndicator from './components/VerticalSectionIndicator';
-// Import the NeumorphicElements component
-import NeumorphicElements from './components/backgrounds/NeumorphicElements';
+import VerticalSectionIndicator from './components/VerticalSectionIndicator.tsx';
+import NeumorphicElements from './components/backgrounds/NeumorphicElements.tsx';
 import styled from 'styled-components';
 import GlobalStyle from './styles/GlobalStyle';
 
