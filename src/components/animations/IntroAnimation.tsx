@@ -1,12 +1,13 @@
 // src/components/animations/IntroAnimation.tsx
 import React, { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import styled, { keyframes, css } from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import ScrambleText from './ScrambleText';
 
 interface IntroAnimationProps {
   onComplete: () => void;
   onThemeToggle: (isDarkMode: boolean) => void;
+  onStatsBegin?: () => void; // Callback to trigger stats animation
   darkMode: boolean;
 }
 
@@ -87,37 +88,8 @@ const continuousGlowBurst = keyframes`
   }
 `;
 
-const logoHoverGlow = css`
-  &:hover {
-    text-shadow:
-      0 0 5px rgb(58, 186, 170),
-      0 0 10px rgb(58, 186, 170),
-      0 0 15px rgb(58, 186, 170) !important;
-    animation: none !important;
-  }
-`;
-
-const moveBullet = keyframes`
-  0% {
-    left: -20px;
-    width: 20px;
-  }
-  100% {
-    left: 100%;
-    width: 20px;
-  }
-`;
-
-const drawBorder = keyframes`
-  from {
-    width: 0;
-  }
-  to {
-    width: 100%;
-  }
-`;
-
-const fadeIn = keyframes`
+// The underscore prefix indicates an unused keyframe, preserving it for future use
+const _fadeIn = keyframes`
   from { opacity: 0; }
   to   { opacity: 1; }
 `;
@@ -155,68 +127,9 @@ const ProfileImage = styled(motion.img)`
   }
 `;
 
-const HeaderContainer = styled.div<{ glassmorphism?: boolean; darkMode?: boolean }>`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 60px;
-  z-index: 998;
-  background: ${props => {
-    if (props.glassmorphism && props.darkMode) return 'rgba(0, 0, 0, 0.5)';
-    if (props.glassmorphism) return 'rgba(0, 0, 0, 0.5)';
-    return 'transparent';
-  }};
-  backdrop-filter: ${props => props.glassmorphism ? 'blur(10px)' : 'none'};
-  -webkit-backdrop-filter: ${props => props.glassmorphism ? 'blur(10px)' : 'none'};
-  transition: all 0.8s ease-in-out;
-  box-shadow: ${props => props.glassmorphism ? '0 4px 30px rgba(0, 0, 0, 0.1)' : 'none'};
-`;
-
-const HeaderBorder = styled.div<{ show: boolean; darkMode?: boolean }>`
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 2px;
-  background-color: rgb(132,227,200);
-  width: ${props => props.show ? '100%' : '0'};
-  animation: ${props => props.show ? css`${drawBorder} 1.2s ease-out forwards` : 'none'};
-  z-index: 2;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  transition: width 0.2s ease-out;
-`;
-
-const HeaderBullet = styled.div<{ animate: boolean }>`
-  position: absolute;
-  bottom: -4px;
-  width: 20px;
-  height: 10px;
-  background-color: rgb(132,227,215);
-  border-radius: 5px;
-  opacity: ${props => props.animate ? 1 : 0};
-  animation: ${props => props.animate ? css`${moveBullet} 1.2s ease-out forwards` : 'none'};
-  box-shadow: 0 0 10px rgb(132,227,215);
-  z-index: 2;
-`;
-
-const DarkModeBullet = styled.div<{ animate: boolean }>`
-  position: absolute;
-  bottom: -4px;
-  width: 20px;
-  height: 10px;
-  background-color: rgb(132,227,215);
-  border-radius: 5px;
-  opacity: ${props => props.animate ? 1 : 0};
-  animation: ${props => props.animate ? css`${moveBullet} 1.2s ease-out forwards` : 'none'};
-  box-shadow: 0 0 15px rgb(132,227,215), 0 0 30px rgb(132,227,215);
-  z-index: 2;
-`;
-
 const LogoWrapper = styled(motion.div)<{
   blur?: string;
   fontSize?: string;
-  isInHeader?: boolean;
 }>`
   position: absolute;
   display: inline-flex;
@@ -228,17 +141,6 @@ const LogoWrapper = styled(motion.div)<{
   z-index: 3;
   white-space: nowrap;
   transition: font-size 0.8s ease-in-out, color 0.5s ease-in-out;
-  
-  ${props => props.isInHeader && `
-    &:hover {
-      span {
-        text-shadow: 
-          0 0 5px rgb(58, 186, 170),
-          0 0 10px rgb(58, 186, 170),
-          0 0 15px rgb(58, 186, 170) !important;
-      }
-    }
-  `}
   
   @media (max-width: 768px) {
     font-size: ${props => props.fontSize === "2.2rem" ? "1.8rem" : "3.5rem"};
@@ -256,7 +158,7 @@ const CenteredTextContainer = styled.div`
   transform: translate(-50%, -50%);
   width: auto;
   text-align: center;
-  z-index: 5;
+  z-index: 20; // Higher z-index to keep above stats
   
   @media (max-width: 768px) {
     top: 35%;
@@ -293,115 +195,13 @@ const Letter = styled(motion.span)`
   display: inline-block;
 `;
 
-const Space = styled.span`
-  display: inline-block;
-  width: 0.3em;
-`;
-
-const GlowingLabText = styled(motion.span)<{ 
-  glowLevel?: 'full' | 'continuous' | 'transitioning' | 'power';
-}>`
-  letter-spacing: 0.03em;
-  animation: ${props => {
-    switch(props.glowLevel) {
-      case 'full':
-        return css`${glowBurst} 2s ease-in-out forwards`;
-      case 'continuous':
-        return css`${continuousGlowBurst} 3s ease-in-out infinite`;
-      case 'transitioning':
-        return css`${glowBurst} 1.5s ease-in-out`;
-      case 'power':
-        return css`${powerGlowBurst} 2.5s ease-in-out forwards`;
-      default:
-        return 'none';
-    }
-  }};
-  transition: color 0.5s ease-in-out, text-shadow 0.5s ease-in-out;
-  ${logoHoverGlow}
-`;
-
-const GlowingLetter = styled(motion.span)<{ 
-  glowLevel?: 'full' | 'continuous' | 'transitioning' | 'power';
-}>`
-  animation: ${props => {
-    switch(props.glowLevel) {
-      case 'full':
-        return css`${glowBurst} 2s ease-in-out forwards`;
-      case 'continuous':
-        return css`${continuousGlowBurst} 3s ease-in-out infinite`;
-      case 'transitioning':
-        return css`${glowBurst} 1.5s ease-in-out`;
-      case 'power':
-        return css`${powerGlowBurst} 2.5s ease-in-out forwards`;
-      default:
-        return 'none';
-    }
-  }};
-  transition: color 0.5s ease-in-out, text-shadow 0.5s ease-in-out;
-  ${logoHoverGlow}
-`;
-
-const ThemeToggle = styled.button<{ darkMode?: boolean; show?: boolean }>`
-  position: fixed;
-  top: 30px;
-  right: 10%;
-  transform: translateY(-50%);
-  width: 42px;
-  height: 42px;
-  background: ${props => props.darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)'};
-  border: 2px solid ${props => props.darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.5)'};
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease-in-out;
-  outline: none;
-  visibility: ${props => props.show ? 'visible' : 'hidden'};
-  opacity: ${props => props.show ? 1 : 0};
-  z-index: 9999;
-  box-shadow: ${props => props.darkMode 
-    ? '0 0 15px rgba(255, 255, 255, 0.3), 0 0 5px rgba(132, 227, 215, 0.4)' 
-    : '0 4px 15px rgba(0, 0, 0, 0.3), 0 0 5px rgba(132, 227, 215, 0.3)'};
-  
-  &:hover {
-    background: ${props => props.darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)'};
-    box-shadow: 0 0 15px rgba(132, 227, 215, 0.6), 0 0 30px rgba(132, 227, 215, 0.4);
-    transform: translateY(-50%) scale(1.08);
-  }
-  
-  &:active {
-    transform: translateY(-50%) scale(0.95);
-  }
-  
-  @media (max-width: 768px) {
-    right: 25%;
-  }
-`;
-
-// SVG Icons
-const SunIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="12" cy="12" r="5" stroke="#fff" strokeWidth="2"/>
-    <path d="M12 4V2" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M12 22V20" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M20 12H22" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M2 12H4" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M19.1421 5.44446L20.5563 4.03024" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M3.94366 20.5563L5.35788 19.1421" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M19.1421 19.1421L20.5563 20.5563" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M3.94366 4.03024L5.35788 5.44446" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-  </svg>
-);
-
-const MoonIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="rgba(0, 0, 0, 0.3)" />
-  </svg>
-);
-
 // Main component
-const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete, onThemeToggle, darkMode }) => {
+const IntroAnimation: React.FC<IntroAnimationProps> = ({ 
+  onComplete, 
+  onThemeToggle, 
+  onStatsBegin,
+  darkMode 
+}) => {
   // Constants
   const name = "JulioTompsett's";
   const ANIMATION_TIMINGS = {
@@ -410,12 +210,8 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete, onThemeTogg
     START_RETRACTION: 2750,
     HIDE_RETRACTED_JT: 3900,
     POWER_GLOW_BURST: 5250,
-    SLIDE_TO_HEADER: 5350,
-    GLASSMORPHISM: 5150,
-    SHOW_TOGGLE: 5250,
-    HEADER_BORDER: 5550,
-    HEADER_GLOW: 6550,
-    ANIMATION_COMPLETE: 7350
+    FINAL_GLOW: 5500,
+    ANIMATION_COMPLETE: 6000
   };
 
   // State management - organized by functionality
@@ -425,7 +221,6 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete, onThemeTogg
   const [showSubtitle, setShowSubtitle] = useState(false);
   const [fadeOutSubtitle, setFadeOutSubtitle] = useState(false);
   const [retreatImage, setRetreatImage] = useState(false);
-  const [slideToHeader, setSlideToHeader] = useState(false);
   const [showJulioTompsett, setShowJulioTompsett] = useState(false);
   const [imageVisible, setImageVisible] = useState(false);
   const [startScramble, setStartScramble] = useState(false);
@@ -433,19 +228,10 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete, onThemeTogg
   const [hideRetractedJT, setHideRetractedJT] = useState(false);
   const [mainJTLabText, setMainJTLabText] = useState(false);
   const [showSubtitleText, setShowSubtitleText] = useState(false);
-  const [scrambleSubtitleText, setScrambleSubtitleText] = useState(false);
-
-  // Header and border states
-  const [headerBorderVisible, setHeaderBorderVisible] = useState(false);
-  const [animateLightBullet, setAnimateLightBullet] = useState(false);
-  const [animateDarkBullet, setAnimateDarkBullet] = useState(false);
-  const [bulletAnimationInProgress, setBulletAnimationInProgress] = useState(false);
-  const [glassmorphism, setGlassmorphism] = useState(false);
-
+  const [swishExit, setSwishExit] = useState(false);
+  
   // Theme and appearance states
   const [lightTheme, setLightTheme] = useState(false);
-  const [showToggle, setShowToggle] = useState(false);
-  const [tOffset, setTOffset] = useState(0);
   const [blur, setBlur] = useState<"none"|"blur(5px)">("none");
   const [textPos, setTextPos] = useState<{ top: string; left: string }>({
     top: `calc(50% + ${POSITION.VERTICAL_ADJUSTMENT_TITLE})`,
@@ -453,93 +239,50 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete, onThemeTogg
   });
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [currentGlowLevel, setCurrentGlowLevel] = useState<'full' | 'continuous' | 'transitioning' | 'power' | undefined>(undefined);
-  const [subtleGlow, setSubtleGlow] = useState(false);
-  const [themeToggled, setThemeToggled] = useState(false);
   const [continuousGlowingActive, setContinuousGlowingActive] = useState(false);
 
   // Refs
   const jRef = useRef<HTMLSpanElement>(null);
-  const webDevRef = useRef<HTMLDivElement | null>(null);
   const lettersRef = useRef<HTMLSpanElement[]>([]);
 
   // Helper functions
   const leftOffset = POSITION.HORIZONTAL_ADJUSTMENT;
 
-  const startContinuousGlow = () => {
-    setCurrentGlowLevel('continuous');
-    setContinuousGlowingActive(true);
-    
-    const continuousGlowTimer = setInterval(() => {
-      if (!continuousGlowingActive) {
-        setCurrentGlowLevel('continuous');
-        setContinuousGlowingActive(true);
-      }
-    }, 5000);
-    
-    return () => {
-      clearInterval(continuousGlowTimer);
-    };
-  };
-
-  const toggleTheme = () => {
-    console.log("Theme toggle clicked, current dark mode:", darkMode);
-    
-    const newDarkMode = !darkMode;
-    onThemeToggle(newDarkMode);
-    setLightTheme(!newDarkMode);
-    setThemeToggled(true);
-    
-    setCurrentGlowLevel('continuous');
-    setContinuousGlowingActive(true);
-    
-    setHeaderBorderVisible(true);
-    setBulletAnimationInProgress(true);
-    
-    if (newDarkMode) {
-      setAnimateDarkBullet(true);
-      setTimeout(() => {
-        setAnimateDarkBullet(false);
-        setBulletAnimationInProgress(false);
-      }, 1200);
-    } else {
-      setAnimateLightBullet(true);
-      setTimeout(() => {
-        setAnimateLightBullet(false);
-        setBulletAnimationInProgress(false);
-      }, 1200);
-    }
-    
-    setTimeout(() => {
-      setCurrentGlowLevel('full');
-      
-      setTimeout(() => {
-        setCurrentGlowLevel('continuous');
-        setContinuousGlowingActive(true);
-      }, 2000);
-    }, 100);
-  };
-
   const handleScrambleComplete = () => {
     console.log("[Animation] Scramble complete at:", Date.now());
     setScrambleComplete(true);
-    setScrambleSubtitleText(true);
     setShowSubtitle(false);
     setMainJTLabText(true);
     setBlur("none");
     
+    // Set a longer display time (4 seconds total)
     setTimeout(() => {
       console.log("[Animation] Applying power glow after delay at:", Date.now());
       setCurrentGlowLevel('power');
       
       setTimeout(() => {
-        setCurrentGlowLevel('power');
-      }, 20);
-      
-      setTimeout(() => {
         console.log("[Animation] Switching to continuous glow at:", Date.now());
         setCurrentGlowLevel('continuous');
         setContinuousGlowingActive(true);
-      }, 2000);
+        
+        // 250ms into the display period, trigger stats animation start
+        setTimeout(() => {
+          // Signal to the parent that stats should begin, but don't complete the intro yet
+          if (onStatsBegin) {
+            onStatsBegin();
+          }
+        }, 250);
+        
+        // After the extended display period (full 4 seconds from switching to continuous glow)
+        // then start exit animation
+        setTimeout(() => {
+          // Start the exit animation
+          setSwishExit(true);
+          
+          // Delay the completion callback until after the exit animation
+          setTimeout(onComplete, 900);
+        }, 4000);
+      }, 200);
     }, 200);
   };
 
@@ -567,38 +310,21 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete, onThemeTogg
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Effect for dark mode changes
-  useEffect(() => {
-    console.log("Dark mode state changed:", darkMode);
-    
-    if (darkMode) {
-      if (slideToHeader && !bulletAnimationInProgress) {
-        console.log("Applying continuous glow for dark mode");
-        setCurrentGlowLevel('continuous');
-        setContinuousGlowingActive(true);
-      }
-    }
-  }, [darkMode, slideToHeader, bulletAnimationInProgress]);
-
   // Effect for calculating text offsets during retraction
   useEffect(() => {
     if (retract) {
       setBlur("blur(5px)");
-      const tIdx = name.indexOf("T");
-      const jEl = jRef.current, tEl = lettersRef.current[tIdx];
-      if (jEl && tEl) {
-        const jr = jEl.getBoundingClientRect(),
-          tr = tEl.getBoundingClientRect();
-        setTOffset(jr.right - tr.left);
-      }
     }
-  }, [retract, name]);
+  }, [retract]);
 
   // Main animation sequence effect
   useEffect(() => {
-    let initialBulletTimer: NodeJS.Timeout;
-    let continuousGlowCleanup: (() => void) | undefined;
-    
+    // Load saved dark mode preference if available
+    const savedDarkMode = localStorage.getItem('darkMode');
+    if (savedDarkMode === 'true' && !darkMode) {
+      onThemeToggle(true);
+    }
+
     const timers = [
       setTimeout(() => {
         console.log("[Animation] Starting initial elements appearance at:", Date.now());
@@ -630,66 +356,13 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete, onThemeTogg
       setTimeout(() => {
         console.log("[Animation] Initiating power glow burst at:", Date.now());
         setCurrentGlowLevel('power');
-        
-        const powerGlowSequence = [
-          setTimeout(() => setCurrentGlowLevel('power'), 20),
-          setTimeout(() => setCurrentGlowLevel('power'), 40),
-          setTimeout(() => setCurrentGlowLevel('power'), 60)
-        ];
-      }, ANIMATION_TIMINGS.POWER_GLOW_BURST),
-      
-      setTimeout(() => {
-        setSlideToHeader(true);
-        setShowSubtitle(false);
-        setRetreatImage(true);
-      }, ANIMATION_TIMINGS.SLIDE_TO_HEADER),
-      
-      setTimeout(() => setGlassmorphism(true), ANIMATION_TIMINGS.GLASSMORPHISM),
-      
-      setTimeout(() => setLightTheme(true), ANIMATION_TIMINGS.GLASSMORPHISM),
-      
-      setTimeout(() => {
-        setShowToggle(true);
-        console.log("Toggle button should be visible now");
-      }, ANIMATION_TIMINGS.SHOW_TOGGLE),
-      
-      setTimeout(() => {
-        setHeaderBorderVisible(true);
-        
-        if (!bulletAnimationInProgress) {
-          setBulletAnimationInProgress(true);
-          
-          setAnimateLightBullet(false);
-          setAnimateDarkBullet(false);
-          
-          initialBulletTimer = setTimeout(() => {
-            setAnimateLightBullet(true);
-            
-            setTimeout(() => {
-              setAnimateLightBullet(false);
-              setBulletAnimationInProgress(false);
-            }, 1200);
-          }, 50);
-        }
-      }, ANIMATION_TIMINGS.HEADER_BORDER),
-      
-      setTimeout(() => {
-        setCurrentGlowLevel('full');
-        
-        setTimeout(() => {
-          continuousGlowCleanup = startContinuousGlow();
-        }, 2000);
-      }, ANIMATION_TIMINGS.HEADER_GLOW),
-      
-      setTimeout(onComplete, ANIMATION_TIMINGS.ANIMATION_COMPLETE),
+      }, ANIMATION_TIMINGS.POWER_GLOW_BURST)
     ];
     
     return () => {
       timers.forEach(clearTimeout);
-      if (initialBulletTimer) clearTimeout(initialBulletTimer);
-      if (continuousGlowCleanup) continuousGlowCleanup();
     };
-  }, [onComplete, bulletAnimationInProgress, windowWidth]);
+  }, [onComplete, darkMode, onThemeToggle]);
 
   // Render functions
   const renderInitial = () => (
@@ -749,24 +422,7 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete, onThemeTogg
   // Render component
   return (
     <Container darkMode={darkMode} lightTheme={lightTheme && !darkMode}>
-      {/* Theme toggle button */}
-      <ThemeToggle
-        darkMode={darkMode}
-        show={showToggle}
-        onClick={toggleTheme}
-        aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
-      >
-        {darkMode ? <SunIcon /> : <MoonIcon />}
-      </ThemeToggle>
-      
-      {/* Header container with bullet and border */}
-      <HeaderContainer glassmorphism={glassmorphism} darkMode={darkMode}>
-        <HeaderBorder show={headerBorderVisible} darkMode={darkMode} />
-        <HeaderBullet animate={animateLightBullet} />
-        <DarkModeBullet animate={animateDarkBullet} />
-      </HeaderContainer>
-      
-      {/* Profile image */}
+      {/* Profile image - with faster slide-in animation */}
       <ProfileImage 
         src="/ja_left.png" 
         alt="Profile" 
@@ -776,15 +432,13 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete, onThemeTogg
         }}
         animate={{ 
           opacity: retreatImage ? 0 : (imageVisible ? 1 : 0),
-          y: retreatImage ? 0 : (imageVisible ? 0 : "100vh")
+          y: retreatImage ? "100vh" : (imageVisible ? 0 : "100vh")
         }}
         transition={{ 
-          opacity: retreatImage 
-            ? { duration: 1.2, ease: "easeIn" } 
-            : { duration: 1, ease: "easeOut" },
+          opacity: { duration: 0.5, ease: "easeInOut" }, // Faster opacity transition
           y: { 
-            duration: 1.5,
-            ease: imageVisible ? [0.215, 0.61, 0.355, 1.2] : "easeOut"
+            duration: 0.8, // Faster slide-in (was 1.5s)
+            ease: "easeOut"
           }
         }}
       />
@@ -899,27 +553,34 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete, onThemeTogg
         </>
       )}
 
-      {/* JT Lab in center position */}
-      {mainJTLabText && !slideToHeader && (
+      {/* JT Lab in center position with swish exit animation */}
+      {mainJTLabText && (
         <>
           <CenteredTextContainer>
             <motion.div
-              initial={{ opacity: 0 }}
+              initial={{ opacity: 0, x: 0 }}
               animate={{ 
-                opacity: 1,
+                opacity: swishExit ? 0 : 1,
+                x: swishExit ? "100vw" : 0, // Animate to right side of screen
                 color: darkMode ? '#fff' : '#000'
               }}
-              transition={{ opacity: { duration: 0.2 } }}
+              transition={{ 
+                opacity: { duration: 0.8 },
+                x: { duration: 0.8, ease: "easeIn" } // Use easeIn for acceleration effect
+              }}
               style={{
                 fontFamily: "Cal Sans, sans-serif",
                 fontSize: windowWidth <= 768 ? "8rem" : "12rem",
                 fontWeight: "bold",
                 textShadow: currentGlowLevel === 'power' 
                   ? `0 0 30px ${COLORS.GLOW}, 0 0 60px ${COLORS.GLOW}, 0 0 90px ${COLORS.GLOW_MEDIUM}, 0 0 120px ${COLORS.GLOW_MEDIUM}`
-                  : `0 0 10px ${COLORS.GLOW_MEDIUM}, 0 0 20px ${COLORS.GLOW_LIGHT}, 0 0 30px ${COLORS.GLOW_LIGHTER}`,
+                  : (currentGlowLevel === 'continuous'
+                    ? `0 0 8px ${COLORS.GLOW_MEDIUM}, 0 0 12px ${COLORS.GLOW_LIGHTER}, 0 0 16px ${COLORS.GLOW_LIGHTEST}`
+                    : `0 0 10px ${COLORS.GLOW_MEDIUM}, 0 0 20px ${COLORS.GLOW_LIGHT}, 0 0 30px ${COLORS.GLOW_LIGHTER}`),
                 WebkitTextFillColor: darkMode ? 'white' : 'black',
                 WebkitTextStroke: '0.5px ' + (darkMode ? 'white' : 'black'),
-                transition: "color 0.3s ease-in-out, text-shadow 0.3s ease-in-out"
+                transition: "color 0.3s ease-in-out, text-shadow 0.3s ease-in-out",
+                transform: "translateZ(0)" // Force GPU acceleration for smoother animation
               }}
             >
               JT Lab
@@ -928,92 +589,25 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete, onThemeTogg
           
           <SubtitleTextContainer>
             <motion.div
-              initial={{ opacity: 0 }}
+              initial={{ opacity: 0, x: 0 }}
               animate={{ 
-                opacity: 1,
+                opacity: swishExit ? 0 : 1,
+                x: swishExit ? "100vw" : 0, // Also swish the subtitle text
                 color: darkMode ? COLORS.TEXT_LIGHT : COLORS.TEXT_DARK
               }}
-              transition={{ opacity: { duration: 0.2 } }}
+              transition={{ 
+                opacity: { duration: 0.8 },
+                x: { duration: 0.8, ease: "easeIn", delay: 0.05 } // Slight delay for staggered effect
+              }}
               style={{
                 fontWeight: 400,
-                fontSize: windowWidth <= 768 ? "1.1rem" : "1.3rem"
+                fontSize: windowWidth <= 768 ? "1.1rem" : "1.3rem",
+                transform: "translateZ(0)" // Force GPU acceleration
               }}
             >
               Landing Sites | SPA | PWA | Web | Mobile Optimized
             </motion.div>
           </SubtitleTextContainer>
-        </>
-      )}
-
-      {/* JT Lab in header position */}
-      {mainJTLabText && slideToHeader && (
-        <>
-          <motion.div
-            initial={{ 
-              position: "fixed",
-              top: "40%",
-              left: "50%", 
-              transform: "translate(-50%, -50%)",
-              fontSize: windowWidth <= 768 ? "8rem" : "12rem"
-            }}
-            animate={{ 
-              position: "fixed",
-              top: "30px",
-              left: "10%", 
-              transform: "translateY(-50%)",
-              fontSize: windowWidth <= 768 ? "1.8rem" : "2.2rem"
-            }}
-            transition={{ 
-              duration: 0.8,
-              ease: "easeInOut" 
-            }}
-            style={{
-              fontFamily: "Cal Sans, sans-serif",
-              fontWeight: "bold",
-              color: darkMode ? '#fff' : '#000',
-              zIndex: 1001,
-              cursor: "pointer",
-              textShadow: currentGlowLevel === 'power'
-                ? `0 0 30px ${COLORS.GLOW}, 0 0 60px ${COLORS.GLOW}, 0 0 90px ${COLORS.GLOW_MEDIUM}, 0 0 120px ${COLORS.GLOW_MEDIUM}`
-                : (currentGlowLevel === 'full'
-                  ? `0 0 10px ${COLORS.GLOW_MEDIUM}, 0 0 20px ${COLORS.GLOW_LIGHT}, 0 0 30px ${COLORS.GLOW_LIGHTER}`
-                  : (currentGlowLevel === 'continuous' 
-                    ? `0 0 8px ${COLORS.GLOW_MEDIUM}, 0 0 12px ${COLORS.GLOW_LIGHTER}, 0 0 16px ${COLORS.GLOW_LIGHTEST}`
-                    : `0 0 5px ${COLORS.GLOW_LIGHTEST}, 0 0 10px ${COLORS.GLOW_FAINT}`)),
-              transition: "color 0.3s ease-in-out, text-shadow 0.3s ease-in-out",
-              WebkitTextFillColor: darkMode ? 'white' : 'black',
-              WebkitTextStroke: '0.5px ' + (darkMode ? 'white' : 'black'),
-            }}
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          >
-            JT Lab
-          </motion.div>
-          
-          <motion.div
-            initial={{ 
-              position: "fixed",
-              top: "calc(40% + 9vh)",
-              left: "50%", 
-              transform: "translateX(-50%)",
-              opacity: 1
-            }}
-            animate={{ 
-              opacity: 0
-            }}
-            transition={{ 
-              opacity: { duration: 0.4, ease: "easeOut" }
-            }}
-            style={{
-              fontFamily: "Montserrat, sans-serif",
-              fontSize: windowWidth <= 768 ? "1.1rem" : "1.3rem",
-              fontWeight: 400,
-              color: darkMode ? COLORS.TEXT_LIGHT : COLORS.TEXT_DARK,
-              textAlign: "center",
-              maxWidth: "90%"
-            }}
-          >
-            Landing Sites | SPA | PWA | Web | Mobile Optimized
-          </motion.div>
         </>
       )}
     </Container>

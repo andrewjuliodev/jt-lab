@@ -1,10 +1,12 @@
 // src/App.tsx
 import React, { useState, useEffect } from 'react';
 import IntroAnimation from './components/animations/IntroAnimation';
+import CombinedStatsAnimation from './components/animations/CombinedStatsAnimation';
 import Header from './components/Header';
 import ServicesSection from './components/sections/ServicesSection';
 import { PortfolioSection, ContactSection, AboutSection } from './components/sections/DummySections';
 import styled from 'styled-components';
+import GlobalStyle from './styles/GlobalStyle';
 
 const AppContainer = styled.div<{ $darkMode: boolean }>`
   min-height: 100vh;
@@ -19,7 +21,12 @@ const Content = styled.div<{ $introComplete: boolean }>`
 `;
 
 const App: React.FC = () => {
+  // Animation sequence state
   const [introComplete, setIntroComplete] = useState(false);
+  const [statsActive, setStatsActive] = useState(false);
+  const [statsComplete, setStatsComplete] = useState(false);
+  const [mainContentVisible, setMainContentVisible] = useState(false);
+  
   const [darkMode, setDarkMode] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
   
@@ -32,22 +39,67 @@ const App: React.FC = () => {
   }, []);
   
   // Handle theme toggle
-  const handleThemeToggle = () => {
-    const newDarkMode = !darkMode;
-    setDarkMode(newDarkMode);
-    localStorage.setItem('darkMode', newDarkMode ? 'true' : 'false');
+  const handleThemeToggle = (isDarkMode: boolean) => {
+    setDarkMode(isDarkMode);
+    localStorage.setItem('darkMode', isDarkMode ? 'true' : 'false');
   };
   
-  // Handle intro animation completion
-  const handleIntroComplete = () => {
-    setIntroComplete(true);
-    // Set initial active section after intro completes
-    setActiveSection('services');
+  // Handle animation sequence
+  const handleStatsBegin = () => {
+    // This is called 250ms into the JT Lab display period
+    setStatsActive(true);
   };
+  
+  const handleIntroComplete = () => {
+    // This is called after the entire intro + JT Lab exit animation
+    setIntroComplete(true);
+    
+    // If stats are not already complete, they should finish soon
+    if (!statsComplete) {
+      // Give stats a little more time to complete if needed
+      setTimeout(() => {
+        setStatsComplete(true);
+        setTimeout(() => {
+          setMainContentVisible(true);
+          setActiveSection('services');
+        }, 300);
+      }, 500);
+    } else {
+      // Stats are already complete, show main content
+      setTimeout(() => {
+        setMainContentVisible(true);
+        setActiveSection('services');
+      }, 300);
+    }
+  };
+  
+  const handleStatsComplete = () => {
+    setStatsComplete(true);
+    
+    // Only proceed to main content if intro is also complete
+    if (introComplete) {
+      setTimeout(() => {
+        setMainContentVisible(true);
+        setActiveSection('services');
+      }, 300);
+    }
+    // Otherwise, waiting for intro to complete
+  };
+
+  // Set initial body class when the component mounts
+  useEffect(() => {
+    document.body.classList.add('intro-active');
+    
+    // Cleanup function
+    return () => {
+      document.body.classList.remove('intro-active');
+      document.body.classList.remove('intro-complete');
+    };
+  }, []);
 
   // Track active section based on scroll position
   useEffect(() => {
-    if (!introComplete) return;
+    if (!mainContentVisible) return;
 
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
@@ -77,36 +129,61 @@ const App: React.FC = () => {
     // Add scroll event listener
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [introComplete]);
+  }, [mainContentVisible]);
+
+  // When main content becomes visible, update body class to show scrollbar
+  useEffect(() => {
+    if (mainContentVisible) {
+      document.body.classList.remove('intro-active');
+      document.body.classList.add('intro-complete');
+    }
+  }, [mainContentVisible]);
 
   return (
-    <AppContainer $darkMode={darkMode}>
-      {/* Show intro animation when the app first loads */}
-      {!introComplete && (
-        <IntroAnimation onComplete={handleIntroComplete} />
-      )}
-      
-      {/* Show header and content after intro animation completes */}
-      {introComplete && (
-        <>
-          <Header 
-            darkMode={darkMode} 
-            onToggleTheme={handleThemeToggle} 
-            visible={true}
-            activeSection={activeSection || undefined}
-            initialRender={false} // Disable initial bullet animation in App.tsx
+    <>
+      <GlobalStyle />
+      <AppContainer $darkMode={darkMode}>
+        {/* Show intro animation */}
+        {!introComplete && (
+          <IntroAnimation 
+            onComplete={handleIntroComplete}
+            onThemeToggle={handleThemeToggle}
+            onStatsBegin={handleStatsBegin}
+            darkMode={darkMode}
           />
-          
-          <Content $introComplete={introComplete}>
-            {/* Include the sections */}
-            <ServicesSection id="services" darkMode={darkMode} />
-            <PortfolioSection id="portfolio" darkMode={darkMode} />
-            <ContactSection id="contact" darkMode={darkMode} />
-            <AboutSection id="about" darkMode={darkMode} />
-          </Content>
-        </>
-      )}
-    </AppContainer>
+        )}
+        
+        {/* Show combined stats animation */}
+        {statsActive && !mainContentVisible && (
+          <CombinedStatsAnimation 
+            onComplete={handleStatsComplete}
+            darkMode={darkMode}
+            showWithJTLab={!introComplete}
+          />
+        )}
+        
+        {/* Show header and content after both animations complete */}
+        {mainContentVisible && (
+          <>
+            <Header 
+              darkMode={darkMode} 
+              onToggleTheme={() => handleThemeToggle(!darkMode)} 
+              visible={true}
+              activeSection={activeSection || undefined}
+              initialRender={true}
+            />
+            
+            <Content $introComplete={mainContentVisible}>
+              {/* Include the sections */}
+              <ServicesSection id="services" darkMode={darkMode} />
+              <PortfolioSection id="portfolio" darkMode={darkMode} />
+              <ContactSection id="contact" darkMode={darkMode} />
+              <AboutSection id="about" darkMode={darkMode} />
+            </Content>
+          </>
+        )}
+      </AppContainer>
+    </>
   );
 };
 

@@ -1,4 +1,15 @@
-import { createGlobalStyle } from 'styled-components';
+// src/styles/GlobalStyle.ts
+import { createGlobalStyle, keyframes } from 'styled-components';
+
+// Keyframe animation for scrollbar opacity
+const fadeInScrollbar = keyframes`
+  from {
+    scrollbar-color: transparent transparent;
+  }
+  to {
+    scrollbar-color: rgba(132, 227, 215, 0.6) rgba(0, 0, 0, 0.1);
+  }
+`;
 
 // Using Google Fonts for Cal Sans
 const GlobalStyle = createGlobalStyle`
@@ -34,6 +45,48 @@ const GlobalStyle = createGlobalStyle`
     overflow-x: hidden;
     min-height: 100vh;
     width: 100%;
+    
+    /* Hide scrollbar during intro animation */
+    &.intro-active {
+      overflow: hidden;
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE and Edge */
+      
+      &::-webkit-scrollbar {
+        width: 0;
+        background: transparent;
+      }
+    }
+    
+    /* Show scrollbar after intro with animation */
+    &.intro-complete {
+      overflow-y: auto;
+      scrollbar-width: thin; /* Firefox */
+      animation: ${fadeInScrollbar} 1.5s ease-in-out forwards;
+      
+      /* For Webkit browsers */
+      &::-webkit-scrollbar {
+        width: 8px;
+        transition: all 1.5s ease-in-out;
+      }
+      
+      &::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        transition: all 1.5s ease-in-out;
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background-color: rgba(132, 227, 215, 0.6);
+        border-radius: 10px;
+        transition: all 1.5s ease-in-out;
+      }
+      
+      /* Hover effect for scrollbar */
+      &::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(132, 227, 215, 0.8);
+      }
+    }
   }
 
   .cal-sans-regular {

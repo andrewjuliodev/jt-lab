@@ -38,6 +38,25 @@ const glowBurst = keyframes`
   }
 `;
 
+const continuousGlow = keyframes`
+  0% {
+    text-shadow:
+      0 0 4px ${COLORS.GLOW_LIGHTEST}, /* Increased from 3px */
+      0 0 7px ${COLORS.GLOW_FAINT};    /* Increased from 5px */
+  }
+  50% {
+    text-shadow:
+      0 0 8px ${COLORS.GLOW_MEDIUM},
+      0 0 12px ${COLORS.GLOW_LIGHTER},
+      0 0 16px ${COLORS.GLOW_LIGHTEST};
+  }
+  100% {
+    text-shadow:
+      0 0 4px ${COLORS.GLOW_LIGHTEST}, /* Increased from 3px */
+      0 0 7px ${COLORS.GLOW_FAINT};    /* Increased from 5px */
+  }
+`;
+
 const fadeIn = keyframes`
   from { opacity: 0; }
   to   { opacity: 1; }
@@ -128,9 +147,9 @@ const NavItem = styled.li`
 const NavLink = styled.a<{ $darkMode?: boolean; $active?: boolean }>`
   color: ${props => props.$darkMode ? COLORS.WHITE : COLORS.WHITE};
   text-decoration: none;
-  font-weight: ${props => props.$active ? 700 : 500};
+  font-weight: 500; // All items have same weight
   font-size: 1.25rem;
-  transition: text-shadow 0.3s ease, color 0.8s ease-in-out, font-weight 0.3s ease;
+  transition: text-shadow 0.3s ease, color 0.8s ease-in-out;
   padding: 8px 16px;
   position: relative;
   
@@ -154,8 +173,9 @@ const NavLink = styled.a<{ $darkMode?: boolean; $active?: boolean }>`
     }
   }
   
-  ${props => props.$active && `
-    text-shadow: 0 0 10px ${COLORS.GLOW_MEDIUM}, 0 0 20px ${COLORS.GLOW_LIGHT};
+  /* Apply continuous glow animation for active sections instead of font-weight */
+  ${props => props.$active && css`
+    animation: ${continuousGlow} 3s ease-in-out infinite;
   `}
   
   @media (max-width: 768px) {

@@ -34,8 +34,8 @@ export const DURATION = {
 const continuousGlowBurst = keyframes`
   0% {
     text-shadow:
-      0 0 3px ${COLORS.GLOW_LIGHTEST},
-      0 0 5px ${COLORS.GLOW_FAINT};
+      0 0 4px ${COLORS.GLOW_LIGHTEST}, /* Increased from 3px */
+      0 0 7px ${COLORS.GLOW_FAINT};    /* Increased from 5px */
   }
   50% {
     text-shadow:
@@ -45,8 +45,8 @@ const continuousGlowBurst = keyframes`
   }
   100% {
     text-shadow:
-      0 0 3px ${COLORS.GLOW_LIGHTEST},
-      0 0 5px ${COLORS.GLOW_FAINT};
+      0 0 4px ${COLORS.GLOW_LIGHTEST}, /* Increased from 3px */
+      0 0 7px ${COLORS.GLOW_FAINT};    /* Increased from 5px */
   }
 `;
 
@@ -188,17 +188,20 @@ const Logo = styled.div<{ $darkMode: boolean }>`
   color: ${props => props.$darkMode ? COLORS.WHITE : COLORS.BLACK};
   cursor: pointer;
   z-index: 1001;
+  /* Enhanced continuous glow animation for minimum state */
   animation: ${css`${continuousGlowBurst} 3s ease-in-out infinite`};
   
   @media (max-width: 768px) {
     font-size: 1.8rem;
   }
   
+  /* Enhanced hover glow effect */
   &:hover {
     text-shadow: 
       0 0 5px rgb(58, 186, 170),
       0 0 10px rgb(58, 186, 170),
-      0 0 15px rgb(58, 186, 170);
+      0 0 15px rgb(58, 186, 170),
+      0 0 20px rgba(58, 186, 170, 0.5); /* Added extra layer of glow */
   }
 `;
 
@@ -227,7 +230,7 @@ const MoonIcon = () => (
  * Header component with navigation and theme toggle
  */
 const Header: React.FC<HeaderProps> = ({ darkMode, onToggleTheme, visible, activeSection, initialRender = true }) => {
-  const [headerBorderVisible] = useState(true);
+  const [headerBorderVisible, setHeaderBorderVisible] = useState(true);
   const [animateLightBullet, setAnimateLightBullet] = useState(false);
   const [animateDarkBullet, setAnimateDarkBullet] = useState(false);
   const isFirstRender = useRef(true);
