@@ -1,4 +1,4 @@
-// App.tsx - Fixed navigation issues
+// App.tsx - With true infinite loop carousel
 import React, { useState, useEffect, useRef } from 'react';
 import IntroAnimation from './components/animations/IntroAnimation';
 import FadeTransition, { ContentRevealer } from './components/animations/FadeTransition';
@@ -41,23 +41,26 @@ const MainContentContainer = styled.div`
   overflow: hidden; /* Hide overflow */
 `;
 
-// Horizontal scroll container
-const HorizontalScrollContainer = styled.div`
+// Horizontal scroll container - modified for true infinite loop
+const HorizontalScrollContainer = styled.div<{ $noTransition?: boolean }>`
   display: flex;
   flex-direction: row;
-  width: 500%; /* 100% per section, assuming 5 sections */
+  width: 700%; /* Increased from 500% for loop buffer */
   height: 100vh;
-  transition: transform 1.2s cubic-bezier(0.645, 0.045, 0.355, 1.000); /* Improved smoother easing */
+  transition: ${props => props.$noTransition 
+    ? 'none' 
+    : 'transform 1.2s cubic-bezier(0.645, 0.045, 0.355, 1.000)'};
   will-change: transform; /* Performance optimization */
   touch-action: pan-y; /* Allow vertical scrolling on touch devices */
 `;
 
 // Section wrapper for horizontal layout
-const SectionWrapper = styled.div`
+const SectionWrapper = styled.div<{ $isClone?: boolean }>`
   width: 100vw;
   height: 100vh;
   flex-shrink: 0;
   overflow: hidden;
+  opacity: ${props => props.$isClone ? 0.99 : 1}; /* Almost imperceptible difference for clones */
 `;
 
 // Navigation dots
@@ -146,20 +149,27 @@ const App: React.FC = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
   
-  // Current section index for horizontal scrolling
-  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
-  
-  // Transition state - moved to a React state for better reliability
+  // Carousel state
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(1); // Start at index 1 (real first section)
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const scrollCooldown = 1000; // Slightly reduced for better responsiveness
+  const [noTransition, setNoTransition] = useState(false);
+  const scrollCooldown = 1000;
   
   // Define sections
-  const sections = [
+  const realSections = [
     { id: 'home', component: HomeSection },
     { id: 'services', component: ServicesSection },
     { id: 'portfolio', component: PortfolioSection },
     { id: 'contact', component: ContactSection },
     { id: 'about', component: AboutSection }
+  ];
+  
+  // Create extended sections array for infinite loop
+  // Format: [lastSection(clone), realSections, firstSection(clone)]
+  const sections = [
+    { ...realSections[realSections.length - 1], id: 'about-clone-before' },
+    ...realSections,
+    { ...realSections[0], id: 'home-clone-after' }
   ];
   
   // Touch event handling
@@ -202,32 +212,64 @@ const App: React.FC = () => {
 
   // Update active section based on currentSectionIndex
   useEffect(() => {
-    if (sections[currentSectionIndex]) {
-      setActiveSection(sections[currentSectionIndex].id);
+    // Convert current index to real section index (account for clones)
+    let realIndex = currentSectionIndex - 1; // Adjust for the first clone
+    
+    // Handle special cases for clones
+    if (realIndex < 0) {
+      realIndex = realSections.length - 1; // Last real section
+    } else if (realIndex >= realSections.length) {
+      realIndex = 0; // First real section
     }
     
-    // Set transitioning state
+    if (realSections[realIndex]) {
+      setActiveSection(realSections[realIndex].id);
+    }
+    
+    // Reset transitioning state after animation completes
     if (isTransitioning) {
-      // Reset the transitioning state after animation completes
       const timer = setTimeout(() => {
         setIsTransitioning(false);
+        
+        // Check if we need to perform a loop reset (we're on a clone section)
+        if (currentSectionIndex === 0 || currentSectionIndex === sections.length - 1) {
+          // When on a clone section, wait until transition completes, 
+          // then disable transitions, instantly jump to the real section, 
+          // and re-enable transitions
+          setNoTransition(true);
+          
+          // Get the real index to jump to
+          const jumpToIndex = currentSectionIndex === 0 
+            ? sections.length - 2 // Jump to the last real section
+            : 1; // Jump to the first real section
+          
+          // Set the real index without animation
+          setCurrentSectionIndex(jumpToIndex);
+          
+          // Re-enable transitions on next frame
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              setNoTransition(false);
+            });
+          });
+        }
       }, scrollCooldown);
       
       return () => clearTimeout(timer);
     }
-  }, [currentSectionIndex, isTransitioning, sections]);
+  }, [currentSectionIndex, isTransitioning, realSections, sections.length]);
 
   // When main content becomes visible, update body class
   useEffect(() => {
     if (mainContentVisible) {
       document.body.classList.remove('intro-active');
       document.body.classList.add('intro-complete');
-      setCurrentSectionIndex(0); // Start with home section
+      setCurrentSectionIndex(1); // Start with home section (index 1 in the extended array)
       setActiveSection('home');
     }
   }, [mainContentVisible]);
 
-  // Changed to use React state instead of ref for transitioning state
+  // Navigation handler
   const handleNavigation = (newIndex: number) => {
     // If we're already at the target index or currently transitioning, do nothing
     if (newIndex === currentSectionIndex || isTransitioning) {
@@ -241,17 +283,22 @@ const App: React.FC = () => {
     setCurrentSectionIndex(newIndex);
   };
 
-  // Smooth scrolling wheel event handler function - simplified
+  // Convert from real section index to extended array index
+  const getRealToExtendedIndex = (realIndex: number) => {
+    return realIndex + 1; // Add 1 to account for the leading clone
+  };
+
+  // Smooth scrolling wheel event handler function
   const handleWheel = (e: WheelEvent) => {
     e.preventDefault();
     
     if (isTransitioning || Math.abs(e.deltaY) < 10) return;
     
-    if (e.deltaY > 30 && currentSectionIndex < sections.length - 1) {
-      // Scroll right/down - go to next section
+    if (e.deltaY > 30) {
+      // Scrolling down/right - go to next section
       handleNavigation(currentSectionIndex + 1);
-    } else if (e.deltaY < -30 && currentSectionIndex > 0) {
-      // Scroll left/up - go to previous section
+    } else if (e.deltaY < -30) {
+      // Scrolling up/left - go to previous section
       handleNavigation(currentSectionIndex - 1);
     }
   };
@@ -268,7 +315,7 @@ const App: React.FC = () => {
     };
   }, [mainContentVisible, currentSectionIndex, isTransitioning]);
   
-  // Handle touch events for mobile swipe with improved reliability
+  // Handle touch events for mobile swipe
   useEffect(() => {
     if (!mainContentVisible) return;
     
@@ -291,10 +338,10 @@ const App: React.FC = () => {
       // Minimum swipe distance
       if (Math.abs(diff) < 60 || isTransitioning) return;
       
-      if (diff > 0 && currentSectionIndex < sections.length - 1) {
+      if (diff > 0) {
         // Swipe left - go to next section
         handleNavigation(currentSectionIndex + 1);
-      } else if (diff < 0 && currentSectionIndex > 0) {
+      } else if (diff < 0) {
         // Swipe right - go to previous section
         handleNavigation(currentSectionIndex - 1);
       }
@@ -309,7 +356,7 @@ const App: React.FC = () => {
       container.removeEventListener('touchmove', handleTouchMove);
       container.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [mainContentVisible, currentSectionIndex, isTransitioning, sections.length]);
+  }, [mainContentVisible, currentSectionIndex, isTransitioning]);
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -320,20 +367,18 @@ const App: React.FC = () => {
       
       switch (e.key) {
         case 'ArrowRight':
-          if (currentSectionIndex < sections.length - 1) {
-            handleNavigation(currentSectionIndex + 1);
-          }
+          handleNavigation(currentSectionIndex + 1);
           break;
         case 'ArrowLeft':
-          if (currentSectionIndex > 0) {
-            handleNavigation(currentSectionIndex - 1);
-          }
+          handleNavigation(currentSectionIndex - 1);
           break;
         case 'Home':
-          handleNavigation(0);
+          // Go to first real section (index 1)
+          handleNavigation(1);
           break;
         case 'End':
-          handleNavigation(sections.length - 1);
+          // Go to last real section (index sections.length - 2)
+          handleNavigation(sections.length - 2);
           break;
         default:
           break;
@@ -347,36 +392,34 @@ const App: React.FC = () => {
     };
   }, [mainContentVisible, currentSectionIndex, isTransitioning, sections.length]);
 
-  // Navigate to specific section
-  const navigateToSection = (index: number) => {
-    handleNavigation(index);
+  // Navigate to specific section in the real sections array
+  const navigateToRealSection = (realIndex: number) => {
+    // Convert to extended array index
+    const extendedIndex = getRealToExtendedIndex(realIndex);
+    handleNavigation(extendedIndex);
   };
   
   // Navigate to specific section by ID
   const navigateToSectionById = (sectionId: string) => {
-    const index = sections.findIndex(section => section.id === sectionId);
-    if (index !== -1) {
-      handleNavigation(index);
+    const realIndex = realSections.findIndex(section => section.id === sectionId);
+    if (realIndex !== -1) {
+      navigateToRealSection(realIndex);
     }
   };
 
   // Navigate to home section for logo click
   const navigateToHome = () => {
-    handleNavigation(0); // Home is the first section (index 0)
+    navigateToRealSection(0); // Home is the first real section (index 0)
   };
 
   // Navigate to next section
   const navigateNext = () => {
-    if (currentSectionIndex < sections.length - 1) {
-      handleNavigation(currentSectionIndex + 1);
-    }
+    handleNavigation(currentSectionIndex + 1);
   };
 
   // Navigate to previous section
   const navigatePrev = () => {
-    if (currentSectionIndex > 0) {
-      handleNavigation(currentSectionIndex - 1);
-    }
+    handleNavigation(currentSectionIndex - 1);
   };
 
   // Handle navbar section change
@@ -432,7 +475,7 @@ const App: React.FC = () => {
                   visible={true}
                   activeSection={activeSection || undefined}
                   onLogoClick={navigateToHome}
-                  onSectionChange={handleSectionChange} // Added section change handler
+                  onSectionChange={handleSectionChange}
                 />
               </ContentRevealer>
             </FixedHeaderContainer>
@@ -442,10 +485,14 @@ const App: React.FC = () => {
               <ContentRevealer visible={mainContentVisible} delay={0.2}>
                 <HorizontalScrollContainer 
                   id="horizontal-scroll-container"
-                  style={{ transform: `translateX(-${currentSectionIndex * 20}%)` }}
+                  style={{ transform: `translateX(-${currentSectionIndex * (100/7)}%)` }}
+                  $noTransition={noTransition}
                 >
                   {sections.map((section, index) => (
-                    <SectionWrapper key={section.id}>
+                    <SectionWrapper 
+                      key={section.id}
+                      $isClone={index === 0 || index === sections.length - 1}
+                    >
                       <section.component 
                         id={section.id} 
                         darkMode={darkMode} 
@@ -455,17 +502,24 @@ const App: React.FC = () => {
                   ))}
                 </HorizontalScrollContainer>
                 
-                {/* Navigation dots */}
+                {/* Navigation dots - showing only real sections */}
                 <NavDots>
-                  {sections.map((section, index) => (
-                    <NavDot 
-                      key={section.id}
-                      $active={currentSectionIndex === index}
-                      $darkMode={darkMode}
-                      onClick={() => navigateToSection(index)}
-                      title={section.id.charAt(0).toUpperCase() + section.id.slice(1)}
-                    />
-                  ))}
+                  {realSections.map((section, index) => {
+                    // Calculate if this dot should be active based on the current extended index
+                    const isActive = index + 1 === currentSectionIndex || 
+                      (index === 0 && currentSectionIndex === sections.length - 1) ||
+                      (index === realSections.length - 1 && currentSectionIndex === 0);
+                      
+                    return (
+                      <NavDot 
+                        key={section.id}
+                        $active={isActive}
+                        $darkMode={darkMode}
+                        onClick={() => navigateToRealSection(index)}
+                        title={section.id.charAt(0).toUpperCase() + section.id.slice(1)}
+                      />
+                    );
+                  })}
                 </NavDots>
                 
                 {/* Navigation arrows */}
@@ -474,8 +528,6 @@ const App: React.FC = () => {
                     $darkMode={darkMode} 
                     $direction="left"
                     onClick={navigatePrev}
-                    style={{ opacity: currentSectionIndex === 0 ? 0.5 : 1 }}
-                    disabled={currentSectionIndex === 0}
                     aria-label="Previous section"
                   >
                     <svg viewBox="0 0 24 24">
@@ -486,8 +538,6 @@ const App: React.FC = () => {
                     $darkMode={darkMode} 
                     $direction="right"
                     onClick={navigateNext}
-                    style={{ opacity: currentSectionIndex === sections.length - 1 ? 0.5 : 1 }}
-                    disabled={currentSectionIndex === sections.length - 1}
                     aria-label="Next section"
                   >
                     <svg viewBox="0 0 24 24">
