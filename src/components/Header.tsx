@@ -1,7 +1,7 @@
-// src/components/Header.tsx - With glassmorphic dark mode support
+// src/components/Header.tsx - With section change handler
 import React from 'react';
 import styled, { keyframes, css } from 'styled-components';
-import Navbar from './Navbar'; // Import the Navbar component
+import Navbar from './Navbar';
 
 // Constants
 const COLORS = {
@@ -14,9 +14,9 @@ const COLORS = {
   TEXT_DARK: 'rgba(0, 0, 0, 0.7)',
   TEXT_LIGHT: 'rgba(255, 255, 255, 0.7)',
   DARK_BG: 'rgb(30, 31, 31)',
-  DARK_BG_TRANSPARENT: 'rgba(30, 31, 31, 0.85)', // Added transparent dark background
+  DARK_BG_TRANSPARENT: 'rgba(30, 31, 31, 0.85)', 
   LIGHT_BG: '#fff',
-  LIGHT_BG_TRANSPARENT: 'rgba(255, 255, 255, 0.9)', // Added transparent light background
+  LIGHT_BG_TRANSPARENT: 'rgba(255, 255, 255, 0.9)', 
   WHITE: '#fff',
   BLACK: '#000'
 };
@@ -41,21 +41,23 @@ const continuousGlowBurst = keyframes`
   }
 `;
 
-// Types
+// Types - added onSectionChange prop
 interface HeaderProps {
   darkMode: boolean;
   onToggleTheme: () => void;
   visible: boolean;
   activeSection?: string;
+  onLogoClick?: () => void;
+  onSectionChange?: (sectionId: string) => void; // New prop for section change
 }
 
-// Styled Components - Updated with glassmorphic effects
+// Styled Components
 const HeaderContainer = styled.div<{ $darkMode?: boolean; $visible: boolean }>`
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  height: 54px; /* Increased from 46px */
+  height: 54px;
   display: flex;
   align-items: center;
   padding: 0 10%;
@@ -95,6 +97,7 @@ const Logo = styled.div<{ $darkMode: boolean }>`
   color: ${props => props.$darkMode ? COLORS.WHITE : COLORS.BLACK};
   cursor: pointer;
   animation: ${css`${continuousGlowBurst} 3s ease-in-out infinite`};
+  transition: transform 0.3s ease;
   
   @media (max-width: 768px) {
     font-size: 1.5rem;
@@ -105,19 +108,22 @@ const Logo = styled.div<{ $darkMode: boolean }>`
       0 0 5px rgb(58, 186, 170),
       0 0 10px rgb(58, 186, 170),
       0 0 15px rgb(58, 186, 170);
+    transform: scale(1.05);
+  }
+  
+  &:active {
+    transform: scale(0.95);
   }
 `;
 
 const ThemeToggle = styled.button<{ $darkMode?: boolean }>`
-  /* Increased size */
-  width: 28px !important; /* Increased from 24px */
-  height: 28px !important; /* Increased from 24px */
-  min-width: 28px !important; /* Increased from 24px */
-  min-height: 28px !important; /* Increased from 24px */
-  max-width: 28px !important; /* Increased from 24px */
-  max-height: 28px !important; /* Increased from 24px */
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  min-height: 28px !important;
+  max-width: 28px !important;
+  max-height: 28px !important;
   
-  /* Updated styling for better contrast in dark mode */
   background: ${props => props.$darkMode 
     ? 'rgba(132, 227, 215, 0.3)' 
     : 'rgba(0, 0, 0, 0.4)'};
@@ -135,6 +141,7 @@ const ThemeToggle = styled.button<{ $darkMode?: boolean }>`
   box-shadow: ${props => props.$darkMode 
     ? '0 0 10px rgba(132, 227, 215, 0.2)' 
     : '0 2px 8px rgba(0, 0, 0, 0.15)'};
+  transition: all 0.3s ease;
   
   &:hover {
     transform: scale(1.05);
@@ -149,8 +156,8 @@ const ThemeToggle = styled.button<{ $darkMode?: boolean }>`
   }
   
   svg {
-    width: 14px; /* Increased from 12px */
-    height: 14px; /* Increased from 12px */
+    width: 14px;
+    height: 14px;
   }
 `;
 
@@ -166,17 +173,34 @@ const NavbarWrapper = styled.div`
 `;
 
 /**
- * Header component with Navbar integrated properly
+ * Header component with section change handler
  */
-const Header: React.FC<HeaderProps> = ({ darkMode, onToggleTheme, visible, activeSection }) => {
+const Header: React.FC<HeaderProps> = ({ 
+  darkMode, 
+  onToggleTheme, 
+  visible, 
+  activeSection,
+  onLogoClick,
+  onSectionChange
+}) => {
   const handleThemeToggle = () => {
     console.log("Theme toggle clicked, current darkMode:", darkMode);
     onToggleTheme();
   };
 
   const handleLogoClick = () => {
-    console.log("Logo clicked, scrolling to top");
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    console.log("Logo clicked, navigating to home");
+    if (onLogoClick) {
+      onLogoClick();
+    }
+  };
+
+  // Section change handler to pass to Navbar
+  const handleSectionChange = (sectionId: string) => {
+    console.log("Section change in Header:", sectionId);
+    if (onSectionChange) {
+      onSectionChange(sectionId);
+    }
   };
 
   return (
@@ -186,6 +210,9 @@ const Header: React.FC<HeaderProps> = ({ darkMode, onToggleTheme, visible, activ
         <Logo 
           $darkMode={darkMode}
           onClick={handleLogoClick}
+          role="button"
+          aria-label="Go to home section"
+          tabIndex={0}
         >
           JT Lab
         </Logo>
@@ -197,6 +224,7 @@ const Header: React.FC<HeaderProps> = ({ darkMode, onToggleTheme, visible, activ
           darkMode={darkMode} 
           visible={visible} 
           activeSection={activeSection}
+          onSectionChange={handleSectionChange} // Pass the handler to Navbar
         />
       </NavbarWrapper>
       

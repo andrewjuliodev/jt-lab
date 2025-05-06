@@ -1,4 +1,4 @@
-// src/components/Navbar.tsx - Updated with Home section and reordered links
+// src/components/Navbar.tsx - Updated for horizontal scrolling
 import React, { useState } from 'react';
 import styled, { keyframes, css } from 'styled-components';
 
@@ -62,11 +62,12 @@ const fadeIn = keyframes`
   to   { opacity: 1; }
 `;
 
-// Types
+// Types - Extend NavbarProps to include onSectionChange
 interface NavbarProps {
   darkMode: boolean;
   activeSection?: string;
   visible: boolean;
+  onSectionChange?: (sectionId: string) => void;
 }
 
 // Styled Components
@@ -245,9 +246,14 @@ const MobileNavLink = styled.a<{ $darkMode?: boolean; $active?: boolean }>`
 `;
 
 /**
- * Navbar component with navigation links - Updated with Home section and reordered links
+ * Navbar component with navigation links - Updated for horizontal scrolling
  */
-const Navbar: React.FC<NavbarProps> = ({ darkMode, activeSection, visible }) => {
+const Navbar: React.FC<NavbarProps> = ({ 
+  darkMode, 
+  activeSection, 
+  visible, 
+  onSectionChange 
+}) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Toggle mobile menu
@@ -256,22 +262,28 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, activeSection, visible }) => 
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
-  // Handle smooth scrolling to sections
-  const scrollToSection = (sectionId: string, e: React.MouseEvent) => {
-    console.log("Scrolling to section:", sectionId);
-    const element = document.getElementById(sectionId);
-    if (element) {
-      e.preventDefault();
-      element.scrollIntoView({ behavior: 'smooth' });
-      
-      // Close mobile menu when a link is clicked
-      if (mobileMenuOpen) {
-        setMobileMenuOpen(false);
+  // Handle section change with horizontal navigation
+  const handleSectionClick = (sectionId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    // Close mobile menu when a link is clicked
+    if (mobileMenuOpen) {
+      setMobileMenuOpen(false);
+    }
+    
+    // Call the onSectionChange prop if provided
+    if (onSectionChange) {
+      onSectionChange(sectionId);
+    } else {
+      // Fallback to traditional scrolling if no onSectionChange provided
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
       }
     }
   };
 
-  // Navigation links for both desktop and mobile - updated with Home first and About last
+  // Navigation links for both desktop and mobile
   const navigationLinks = [
     { id: 'home', label: 'Home' },
     { id: 'services', label: 'Services' },
@@ -291,7 +303,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, activeSection, visible }) => 
                 $darkMode={darkMode} 
                 href={`#${link.id}`} 
                 $active={activeSection === link.id}
-                onClick={(e) => scrollToSection(link.id, e)}
+                onClick={(e) => handleSectionClick(link.id, e)}
               >
                 {link.label}
               </NavLink>
@@ -321,7 +333,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, activeSection, visible }) => 
                 $darkMode={darkMode} 
                 href={`#${link.id}`}
                 $active={activeSection === link.id}
-                onClick={(e) => scrollToSection(link.id, e)}
+                onClick={(e) => handleSectionClick(link.id, e)}
               >
                 {link.label}
               </MobileNavLink>
