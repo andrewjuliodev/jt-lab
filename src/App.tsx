@@ -1,10 +1,12 @@
-// src/App.tsx with direct theme toggle implementation
+// Updated App.tsx with fixed layout - cleaned up unused variables
 import React, { useState, useEffect } from 'react';
 import IntroAnimation from './components/animations/IntroAnimation';
 import FadeTransition, { ContentRevealer } from './components/animations/FadeTransition';
 import Header from './components/Header';
 import ServicesSection from './components/sections/ServicesSection';
-import { PortfolioSection, ContactSection, AboutSection } from './components/sections/DummySections';
+import PortfolioSection from './components/sections/PortfolioSection';
+import ContactSection from './components/sections/ContactSection';
+import AboutSection from './components/sections/AboutSection';
 import styled from 'styled-components';
 import GlobalStyle from './styles/GlobalStyle';
 
@@ -12,6 +14,27 @@ const AppContainer = styled.div<{ $darkMode: boolean }>`
   min-height: 100vh;
   background-color: ${props => props.$darkMode ? 'rgb(30, 31, 31)' : '#f0f0f0'};
   transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+`;
+
+// Fixed Header container that stays at the top
+const FixedHeaderContainer = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  height: 54px; /* Match header height */
+`;
+
+// Content below header
+const MainContentContainer = styled.div`
+  position: relative; 
+  width: 100%;
+  /* No extra vertical spacing */
+  margin: 0;
+  padding: 0;
+  /* Position content directly below header */
+  margin-top: 54px; /* Exactly match header height */
 `;
 
 const App: React.FC = () => {
@@ -97,6 +120,10 @@ const App: React.FC = () => {
     if (mainContentVisible) {
       document.body.classList.remove('intro-active');
       document.body.classList.add('intro-complete');
+      
+      // Reset scroll position and set active section
+      window.scrollTo(0, 0);
+      setActiveSection('about');
     }
   }, [mainContentVisible]);
 
@@ -133,29 +160,34 @@ const App: React.FC = () => {
           backgroundColor={darkMode ? "#1e1f1f" : "#ffffff"}
           onComplete={() => {
             setMainContentVisible(true);
-            setActiveSection('services');
           }}
         />
         
         {/* Show header and content after animation completes */}
         {mainContentVisible && (
           <>
-            <ContentRevealer visible={mainContentVisible} delay={0.1}>
-              <Header 
-                darkMode={darkMode} 
-                onToggleTheme={toggleTheme} 
-                visible={true}
-                activeSection={activeSection || undefined}
-              />
-            </ContentRevealer>
+            {/* Fixed header at the top */}
+            <FixedHeaderContainer>
+              <ContentRevealer visible={mainContentVisible} delay={0.1}>
+                <Header 
+                  darkMode={darkMode} 
+                  onToggleTheme={toggleTheme} 
+                  visible={true}
+                  activeSection={activeSection || undefined}
+                />
+              </ContentRevealer>
+            </FixedHeaderContainer>
             
-            <ContentRevealer visible={mainContentVisible}>
-              {/* Include the sections but hide their headers */}
-              <ServicesSection id="services" darkMode={darkMode} hideHeader={true} />
-              <PortfolioSection id="portfolio" darkMode={darkMode} hideHeader={true} />
-              <ContactSection id="contact" darkMode={darkMode} hideHeader={true} />
-              <AboutSection id="about" darkMode={darkMode} hideHeader={true} />
-            </ContentRevealer>
+            {/* Main content starts immediately below header */}
+            <MainContentContainer>
+              <ContentRevealer visible={mainContentVisible} delay={0.2}>
+                {/* First section starts right after header */}
+                <AboutSection id="about" darkMode={darkMode} hideHeader={true} />
+                <ServicesSection id="services" darkMode={darkMode} hideHeader={true} />
+                <PortfolioSection id="portfolio" darkMode={darkMode} hideHeader={true} />
+                <ContactSection id="contact" darkMode={darkMode} hideHeader={true} />
+              </ContentRevealer>
+            </MainContentContainer>
           </>
         )}
       </AppContainer>

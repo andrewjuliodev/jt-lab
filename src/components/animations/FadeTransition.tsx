@@ -1,4 +1,4 @@
-// src/components/animations/FadeTransition.tsx
+// src/components/animations/FadeTransition.tsx - Fixed version
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styled from 'styled-components';
@@ -20,10 +20,10 @@ const TransitionOverlay = styled(motion.div)`
   pointer-events: none; // Allow clicking through the overlay
 `;
 
-// Eased content container
+// Eased content container - MODIFIED to remove min-height
 const ContentContainer = styled(motion.div)`
   width: 100%;
-  min-height: 100vh;
+  /* Removed min-height: 100vh which was causing the spacing issue */
 `;
 
 const FadeTransition: React.FC<FadeTransitionProps> = ({ 
@@ -68,6 +68,7 @@ const FadeTransition: React.FC<FadeTransitionProps> = ({
 };
 
 // Export a content revealer that will be used to wrap the main content
+// MODIFIED to remove min-height
 export const ContentRevealer: React.FC<{
   visible: boolean;
   children: React.ReactNode;

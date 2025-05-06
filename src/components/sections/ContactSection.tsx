@@ -1,4 +1,4 @@
-// src/components/sections/DummySections.tsx - Added hideHeader prop
+// src/components/sections/ContactSection.tsx
 import React from 'react';
 import styled from 'styled-components';
 
@@ -68,37 +68,15 @@ const DummyButton = styled.button<{ $darkMode: boolean }>`
   }
 `;
 
-// Section component interfaces
-interface SectionProps {
+// Section component interface
+interface ContactSectionProps {
   id: string;
   darkMode: boolean;
   hideHeader?: boolean;
 }
 
-// Portfolio Section Component
-export const PortfolioSection: React.FC<SectionProps> = ({ id, darkMode, hideHeader }) => {
-  return (
-    <SectionContainer id={id} $darkMode={darkMode} $color="rgba(58, 186, 170, 0.15)">
-      {!hideHeader && (
-        <SectionTitle $darkMode={darkMode}>Portfolio</SectionTitle>
-      )}
-      <SectionContent>
-        <PlaceholderText>
-          Explore our collection of successful projects that showcase our expertise in web development.
-          Each project is a testament to our commitment to quality, creativity, and client satisfaction.
-        </PlaceholderText>
-        <PlaceholderText>
-          From e-commerce stores to corporate websites, our portfolio demonstrates our ability to deliver
-          exceptional digital experiences across various industries and business domains.
-        </PlaceholderText>
-        <DummyButton $darkMode={darkMode}>View More Projects</DummyButton>
-      </SectionContent>
-    </SectionContainer>
-  );
-};
-
 // Contact Section Component
-export const ContactSection: React.FC<SectionProps> = ({ id, darkMode, hideHeader }) => {
+const ContactSection: React.FC<ContactSectionProps> = ({ id, darkMode, hideHeader }) => {
   return (
     <SectionContainer id={id} $darkMode={darkMode} $color="rgba(58, 186, 170, 0.25)">
       {!hideHeader && (
@@ -135,30 +113,4 @@ export const ContactSection: React.FC<SectionProps> = ({ id, darkMode, hideHeade
   );
 };
 
-// About Section Component
-export const AboutSection: React.FC<SectionProps> = ({ id, darkMode, hideHeader }) => {
-  return (
-    <SectionContainer id={id} $darkMode={darkMode} $color="rgba(58, 186, 170, 0.35)">
-      {!hideHeader && (
-        <SectionTitle $darkMode={darkMode}>About Me</SectionTitle>
-      )}
-      <SectionContent>
-        <PlaceholderText>
-          Hi, I'm Julio Tompsett, a passionate web developer with expertise in creating modern,
-          responsive, and user-friendly websites. With several years of experience in the industry,
-          I've developed a deep understanding of web technologies and design principles.
-        </PlaceholderText>
-        <PlaceholderText>
-          My journey in web development began with a fascination for technology and a desire to create
-          meaningful digital experiences. Today, I specialize in building custom websites that not only
-          look great but also deliver exceptional performance and user experience.
-        </PlaceholderText>
-        <PlaceholderText>
-          When I'm not coding, you can find me exploring new technologies, contributing to open-source
-          projects, or sharing my knowledge with the web development community.
-        </PlaceholderText>
-        <DummyButton $darkMode={darkMode}>Download Resume</DummyButton>
-      </SectionContent>
-    </SectionContainer>
-  );
-};
+export default ContactSection;
