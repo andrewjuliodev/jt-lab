@@ -1,4 +1,4 @@
-// src/components/Header.tsx - With slightly larger navbar and toggle button
+// src/components/Header.tsx - With glassmorphic dark mode support
 import React from 'react';
 import styled, { keyframes, css } from 'styled-components';
 import Navbar from './Navbar'; // Import the Navbar component
@@ -14,7 +14,9 @@ const COLORS = {
   TEXT_DARK: 'rgba(0, 0, 0, 0.7)',
   TEXT_LIGHT: 'rgba(255, 255, 255, 0.7)',
   DARK_BG: 'rgb(30, 31, 31)',
+  DARK_BG_TRANSPARENT: 'rgba(30, 31, 31, 0.85)', // Added transparent dark background
   LIGHT_BG: '#fff',
+  LIGHT_BG_TRANSPARENT: 'rgba(255, 255, 255, 0.9)', // Added transparent light background
   WHITE: '#fff',
   BLACK: '#000'
 };
@@ -47,7 +49,7 @@ interface HeaderProps {
   activeSection?: string;
 }
 
-// Styled Components
+// Styled Components - Updated with glassmorphic effects
 const HeaderContainer = styled.div<{ $darkMode?: boolean; $visible: boolean }>`
   position: fixed;
   top: 0;
@@ -58,10 +60,20 @@ const HeaderContainer = styled.div<{ $darkMode?: boolean; $visible: boolean }>`
   align-items: center;
   padding: 0 10%;
   z-index: 1000;
-  background: transparent;
   opacity: ${props => props.$visible ? 1 : 0};
-  transition: opacity 0.5s ease-in-out;
+  transition: opacity 0.5s ease-in-out, background-color 0.3s ease-in-out, backdrop-filter 0.3s ease-in-out;
   pointer-events: ${props => props.$visible ? 'auto' : 'none'};
+  
+  /* Glassmorphic effect for both dark and light modes */
+  background-color: ${props => props.$darkMode ? COLORS.DARK_BG_TRANSPARENT : COLORS.LIGHT_BG_TRANSPARENT};
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: ${props => props.$darkMode 
+    ? '0 4px 30px rgba(0, 0, 0, 0.2)' 
+    : '0 4px 30px rgba(0, 0, 0, 0.1)'};
+  border-bottom: 1px solid ${props => props.$darkMode 
+    ? 'rgba(132, 227, 215, 0.15)' 
+    : 'rgba(132, 227, 215, 0.2)'};
 `;
 
 const HeaderLeft = styled.div`
@@ -105,9 +117,13 @@ const ThemeToggle = styled.button<{ $darkMode?: boolean }>`
   max-width: 28px !important; /* Increased from 24px */
   max-height: 28px !important; /* Increased from 24px */
   
-  /* Styling */
-  background: ${props => props.$darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)'};
-  border: 1px solid ${props => props.$darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.5)'};
+  /* Updated styling for better contrast in dark mode */
+  background: ${props => props.$darkMode 
+    ? 'rgba(132, 227, 215, 0.3)' 
+    : 'rgba(0, 0, 0, 0.4)'};
+  border: 1px solid ${props => props.$darkMode 
+    ? 'rgba(132, 227, 215, 0.5)' 
+    : 'rgba(0, 0, 0, 0.5)'};
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -117,12 +133,15 @@ const ThemeToggle = styled.button<{ $darkMode?: boolean }>`
   margin: 0 !important;
   margin-left: 20px !important; /* Add margin to separate from navbar */
   box-shadow: ${props => props.$darkMode 
-    ? '0 0 8px rgba(255, 255, 255, 0.2)' 
+    ? '0 0 10px rgba(132, 227, 215, 0.2)' 
     : '0 2px 8px rgba(0, 0, 0, 0.15)'};
   
   &:hover {
     transform: scale(1.05);
-    box-shadow: 0 0 10px rgba(132, 227, 215, 0.4);
+    box-shadow: 0 0 15px rgba(132, 227, 215, 0.5);
+    background: ${props => props.$darkMode 
+      ? 'rgba(132, 227, 215, 0.4)' 
+      : 'rgba(0, 0, 0, 0.5)'};
   }
   
   &:active {

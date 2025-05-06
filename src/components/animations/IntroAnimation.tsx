@@ -1,4 +1,4 @@
-// src/components/animations/IntroAnimation.tsx - Fixed subtitle glow issue
+// src/components/animations/IntroAnimation.tsx - Updated subtitle styling
 import React, { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import styled, { keyframes, css } from 'styled-components';
@@ -164,7 +164,7 @@ const CenteredTextContainer = styled.div`
   }
 `;
 
-// Fixed subtitle container - increased z-index to bring it forward
+// Updated subtitle container with simpler, slightly blurred background
 const SubtitleTextContainer = styled.div`
   position: fixed;
   top: calc(40% + 9vh);
@@ -173,7 +173,7 @@ const SubtitleTextContainer = styled.div`
   width: auto;
   max-width: 90%;
   text-align: center;
-  z-index: 25; /* Increased from 5 to 25 to bring it forward */
+  z-index: 25;
   font-family: "Montserrat", sans-serif;
   font-size: 1.3rem;
   font-weight: 400;
@@ -195,31 +195,29 @@ const MainJTLabText = styled(motion.div)<{ $powerGlow: boolean; $darkMode: boole
   color: ${props => props.$darkMode ? '#fff' : '#000'};
   -webkit-text-fill-color: ${props => props.$darkMode ? 'white' : 'black'};
   -webkit-text-stroke: 0.5px ${props => props.$darkMode ? 'white' : 'black'};
-  transition: color 0.3s ease-in-out, text-shadow 0.3s ease-in-out; /* Added text-shadow transition */
+  transition: color 0.3s ease-in-out, text-shadow 0.3s ease-in-out;
   transform: translateZ(0); /* Force GPU acceleration for smoother animation */
   
   /* This ensures a smooth fade-out when glow is removed, not an abrupt change */
   text-shadow: ${props => !props.$powerGlow ? 'none' : 'inherit'};
 `;
 
-// Fixed: Isolated subtitle text from the main title's glow effect
+// Updated subtitle text with simpler styling - slightly blurred background
 const SubtitleText = styled(motion.div)<{ $powerGlow: boolean; $darkMode: boolean }>`
   font-weight: 400;
   animation: ${props => props.$powerGlow ? css`${subtleGlowPulsate} 3s ease-in-out infinite` : 'none'};
   color: ${props => props.$darkMode ? COLORS.TEXT_LIGHT : COLORS.TEXT_DARK};
-  transition: text-shadow 0.3s ease-in-out; /* Added text-shadow transition */
+  transition: text-shadow 0.3s ease-in-out;
   transform: translateZ(0); /* Force GPU acceleration */
-  
-  /* Ensure smooth fade-out of glow */
   text-shadow: ${props => !props.$powerGlow ? 'none' : 'inherit'};
   
-  /* Added a subtle background to help isolate from the main title's glow */
-  background-color: ${props => props.$darkMode ? 'rgba(30, 31, 31, 0.7)' : 'rgba(255, 255, 255, 0.7)'};
-  padding: 5px 15px;
-  border-radius: 10px;
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  /* Simpler styling with just a slightly blurred background */
+  background-color: ${props => props.$darkMode ? 'rgba(30, 31, 31, 0.4)' : 'rgba(255, 255, 255, 0.4)'};
+  padding: 8px 16px;
+  border-radius: 8px;
+  /* Simple blur effect without neumorphic or glassmorphic styling */
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 `;
 
 const NameWrapper = styled(motion.div)`
@@ -377,7 +375,7 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
       setTimeout(() => {
         console.log("[Animation] Starting scrambling at:", Date.now());
         setStartScramble(true);
-      }, ANIMATION_TIMINGS.START_SCRAMBLING), // Using new delay value for scrambling
+      }, ANIMATION_TIMINGS.START_SCRAMBLING),
       
       setTimeout(() => {
         console.log("[Animation] Hiding retracted JT at:", Date.now());
@@ -525,7 +523,7 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
             </motion.div>
           </CenteredTextContainer>
           
-          {/* Subtitle text below Web Dev - Fixed with isolation layer */}
+          {/* Subtitle text below Web Dev - Updated with simpler styling */}
           {showSubtitleText && (
             <SubtitleTextContainer>
               <motion.div
@@ -553,10 +551,12 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
                   fontWeight: 400,
                   fontSize: windowWidth <= 768 ? "1.1rem" : "1.2rem",
                   display: "inline-block",
-                  // Added background to isolate from glow
-                  backgroundColor: darkMode ? 'rgba(30, 31, 31, 0.7)' : 'rgba(255, 255, 255, 0.7)',
-                  padding: '5px 15px',
-                  borderRadius: '10px',
+                  // Simplified styling with just light blur
+                  backgroundColor: darkMode ? 'rgba(30, 31, 31, 0.4)' : 'rgba(255, 255, 255, 0.4)',
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  backdropFilter: 'blur(2px)',
+                  WebkitBackdropFilter: 'blur(2px)',
                 }}
               >
                 Crafting Custom Websites: Business, E-commerce, Portfolios & More
@@ -580,7 +580,7 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
             />
           </CenteredTextContainer>
           
-          {/* Subtitle with scramble effect - added background for isolation */}
+          {/* Subtitle with scramble effect - simplified styling */}
           <SubtitleTextContainer>
             <ScrambleText 
               startText="Crafting Custom Websites: Business, E-commerce, Portfolios & More"
@@ -590,10 +590,12 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
               fontSize={windowWidth <= 768 ? "1.1rem" : "1.2rem"}
               style={{ 
                 fontWeight: 400,
-                // Added background to isolate from glow
-                backgroundColor: darkMode ? 'rgba(30, 31, 31, 0.7)' : 'rgba(255, 255, 255, 0.7)',
-                padding: '5px 15px',
-                borderRadius: '10px',
+                // Simplified styling with just light blur
+                backgroundColor: darkMode ? 'rgba(30, 31, 31, 0.4)' : 'rgba(255, 255, 255, 0.4)',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                backdropFilter: 'blur(2px)', 
+                WebkitBackdropFilter: 'blur(2px)',
               }}
             />
           </SubtitleTextContainer>
@@ -624,7 +626,7 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
             </MainJTLabText>
           </CenteredTextContainer>
           
-          {/* Subtitle text with isolation from glow */}
+          {/* Subtitle text with simplified styling */}
           <SubtitleTextContainer>
             <SubtitleText
               $powerGlow={currentGlowLevel === 'power'}

@@ -1,4 +1,4 @@
-// Updated App.tsx with fixed layout - cleaned up unused variables
+// Updated App.tsx with rearranged sections and Home section
 import React, { useState, useEffect } from 'react';
 import IntroAnimation from './components/animations/IntroAnimation';
 import FadeTransition, { ContentRevealer } from './components/animations/FadeTransition';
@@ -7,6 +7,7 @@ import ServicesSection from './components/sections/ServicesSection';
 import PortfolioSection from './components/sections/PortfolioSection';
 import ContactSection from './components/sections/ContactSection';
 import AboutSection from './components/sections/AboutSection';
+import HomeSection from './components/sections/HomeSection';
 import styled from 'styled-components';
 import GlobalStyle from './styles/GlobalStyle';
 
@@ -26,15 +27,27 @@ const FixedHeaderContainer = styled.div`
   height: 54px; /* Match header height */
 `;
 
-// Content below header
+// Content container
 const MainContentContainer = styled.div`
   position: relative; 
   width: 100%;
-  /* No extra vertical spacing */
   margin: 0;
   padding: 0;
-  /* Position content directly below header */
-  margin-top: 54px; /* Exactly match header height */
+`;
+
+// Adding a smooth scroll behavior to the entire app
+const SmoothScrollContainer = styled.div`
+  scroll-behavior: smooth;
+  height: 100vh;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-snap-type: y mandatory;
+  
+  & > section {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
 `;
 
 const App: React.FC = () => {
@@ -55,7 +68,7 @@ const App: React.FC = () => {
     }
   }, []);
   
-  // Handle animation completion - improved transition timing
+  // Handle animation completion
   const handleIntroComplete = () => {
     setIntroComplete(true);
     
@@ -85,34 +98,45 @@ const App: React.FC = () => {
     if (!mainContentVisible) return;
 
     const handleScroll = () => {
-      const scrollPosition = window.scrollY;
+      // Get the scroll container element
+      const scrollContainer = document.getElementById('smooth-scroll-container');
+      if (!scrollContainer) return;
+      
+      const scrollPosition = scrollContainer.scrollTop;
       const sections = document.querySelectorAll('section[id]');
       
-      // Find the section currently in view
-      const currentSection = Array.from(sections).find(section => {
-        const sectionTop = section.getBoundingClientRect().top + window.scrollY;
+      // Find which section is currently in view
+      const viewportHeight = window.innerHeight;
+      let currentSectionId = null;
+      
+      sections.forEach((section) => {
+        const sectionTop = section.getBoundingClientRect().top + scrollContainer.scrollTop;
         const sectionBottom = sectionTop + section.getBoundingClientRect().height;
         
-        // Add a small offset to the top to prevent the header from changing too soon
-        const offset = 100;
-        
-        // Section is in view if scroll position is within its boundaries (with offset)
-        return scrollPosition >= sectionTop - offset && scrollPosition < sectionBottom;
+        // If scroll position is within section boundaries, this is the active section
+        if (scrollPosition >= sectionTop - viewportHeight/2 && 
+            scrollPosition < sectionBottom - viewportHeight/2) {
+          currentSectionId = section.id;
+        }
       });
       
       // Set active section based on the current section in view
-      if (currentSection) {
-        setActiveSection(currentSection.id);
-        console.log("Scroll detected, active section set to:", currentSection.id);
+      if (currentSectionId) {
+        setActiveSection(currentSectionId);
+        console.log("Scroll detected, active section set to:", currentSectionId);
       }
     };
 
-    // Call once on mount to set initial active section
-    handleScroll();
-    
-    // Add scroll event listener
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    // Get scroll container
+    const scrollContainer = document.getElementById('smooth-scroll-container');
+    if (scrollContainer) {
+      // Call once on mount to set initial active section
+      handleScroll();
+      
+      // Add scroll event listener
+      scrollContainer.addEventListener('scroll', handleScroll);
+      return () => scrollContainer.removeEventListener('scroll', handleScroll);
+    }
   }, [mainContentVisible]);
 
   // When main content becomes visible, update body class to show scrollbar
@@ -122,12 +146,15 @@ const App: React.FC = () => {
       document.body.classList.add('intro-complete');
       
       // Reset scroll position and set active section
-      window.scrollTo(0, 0);
-      setActiveSection('about');
+      const scrollContainer = document.getElementById('smooth-scroll-container');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = 0;
+      }
+      setActiveSection('home'); // Set home as active section
     }
   }, [mainContentVisible]);
 
-  // Direct toggle implementation that doesn't rely on a parameter
+  // Direct toggle implementation for theme
   const toggleTheme = () => {
     console.log("Theme toggle called in App component, current darkMode:", darkMode);
     const newDarkMode = !darkMode;
@@ -178,14 +205,16 @@ const App: React.FC = () => {
               </ContentRevealer>
             </FixedHeaderContainer>
             
-            {/* Main content starts immediately below header */}
+            {/* Main content with smooth scrolling - rearranged sections */}
             <MainContentContainer>
               <ContentRevealer visible={mainContentVisible} delay={0.2}>
-                {/* First section starts right after header */}
-                <AboutSection id="about" darkMode={darkMode} hideHeader={true} />
-                <ServicesSection id="services" darkMode={darkMode} hideHeader={true} />
-                <PortfolioSection id="portfolio" darkMode={darkMode} hideHeader={true} />
-                <ContactSection id="contact" darkMode={darkMode} hideHeader={true} />
+                <SmoothScrollContainer id="smooth-scroll-container">
+                  <HomeSection id="home" darkMode={darkMode} hideHeader={true} />
+                  <ServicesSection id="services" darkMode={darkMode} hideHeader={true} />
+                  <PortfolioSection id="portfolio" darkMode={darkMode} hideHeader={true} />
+                  <ContactSection id="contact" darkMode={darkMode} hideHeader={true} />
+                  <AboutSection id="about" darkMode={darkMode} hideHeader={true} />
+                </SmoothScrollContainer>
               </ContentRevealer>
             </MainContentContainer>
           </>

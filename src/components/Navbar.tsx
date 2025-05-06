@@ -1,4 +1,4 @@
-// src/components/Navbar.tsx - With slightly larger elements
+// src/components/Navbar.tsx - Updated with Home section and reordered links
 import React, { useState } from 'react';
 import styled, { keyframes, css } from 'styled-components';
 
@@ -62,7 +62,7 @@ const fadeIn = keyframes`
   to   { opacity: 1; }
 `;
 
-// Types - Keep NavbarProps separate from HeaderProps
+// Types
 interface NavbarProps {
   darkMode: boolean;
   activeSection?: string;
@@ -71,15 +71,13 @@ interface NavbarProps {
 
 // Styled Components
 const NavbarContainer = styled.nav<{ $visible: boolean }>`
-  /* Position it as a regular element to be used inside header */
-  height: 54px; /* Increased from 46px to match header height */
+  height: 54px;
   display: flex;
   justify-content: center;
   align-items: center;
   opacity: ${props => props.$visible ? 1 : 0};
   transition: opacity 0.5s ease-in-out;
   
-  /* Show on desktop, hide on mobile as we'll use the mobile menu */
   @media (max-width: 768px) {
     display: none;
   }
@@ -87,7 +85,7 @@ const NavbarContainer = styled.nav<{ $visible: boolean }>`
 
 const NavList = styled.ul<{ $mobileMenuOpen?: boolean; $darkMode?: boolean }>`
   display: flex;
-  gap: 2.2rem; /* Slightly increased from 2rem */
+  gap: 2.2rem;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -103,13 +101,12 @@ const NavItem = styled.li`
 `;
 
 const NavLink = styled.a<{ $darkMode?: boolean; $active?: boolean }>`
-  /* Keeping black text in light mode */
   color: ${props => props.$darkMode ? COLORS.WHITE : COLORS.BLACK};
   text-decoration: none;
   font-weight: 500;
-  font-size: 1.05rem; /* Increased from 0.95rem */
+  font-size: 1.05rem;
   transition: text-shadow 0.3s ease, color 0.8s ease-in-out;
-  padding: 6px 10px; /* Increased from 5px 8px */
+  padding: 6px 10px;
   position: relative;
   
   &::after {
@@ -132,7 +129,7 @@ const NavLink = styled.a<{ $darkMode?: boolean; $active?: boolean }>`
     }
   }
   
-  /* Apply continuous glow animation for active sections instead of font-weight */
+  /* Apply continuous glow animation for active sections */
   ${props => props.$active && css`
     animation: ${continuousGlow} 3s ease-in-out infinite;
   `}
@@ -140,7 +137,6 @@ const NavLink = styled.a<{ $darkMode?: boolean; $active?: boolean }>`
 
 // Mobile navbar components
 const MobileNavContainer = styled.div<{ $visible: boolean }>`
-  /* Hidden on desktop */
   display: none;
   
   @media (max-width: 768px) {
@@ -157,10 +153,10 @@ const MobileNavContainer = styled.div<{ $visible: boolean }>`
 
 const BurgerMenu = styled.button<{ $darkMode?: boolean; $open?: boolean }>`
   position: fixed;
-  top: 27px; /* Increased from 23px to center with new header height */
+  top: 27px;
   right: 10%;
-  width: 38px; /* Increased from 36px */
-  height: 38px; /* Increased from 36px */
+  width: 38px;
+  height: 38px;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -172,7 +168,7 @@ const BurgerMenu = styled.button<{ $darkMode?: boolean; $open?: boolean }>`
 `;
 
 const BurgerLine = styled.span<{ $darkMode?: boolean; $open?: boolean; $lineIndex?: number }>`
-  width: 32px; /* Increased from 30px */
+  width: 32px;
   height: 3px;
   background-color: ${props => props.$darkMode ? COLORS.WHITE : '#333'};
   transition: all 0.3s ease-in-out;
@@ -190,14 +186,14 @@ const BurgerLine = styled.span<{ $darkMode?: boolean; $open?: boolean; $lineInde
 
 const MobileNavList = styled.ul<{ $mobileMenuOpen?: boolean; $darkMode?: boolean }>`
   position: fixed;
-  top: 54px; /* Increased from 46px to match new header height */
+  top: 54px;
   right: ${props => props.$mobileMenuOpen ? '0' : '-100%'};
   flex-direction: column;
   gap: 1.5rem;
   background: ${props => props.$darkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.7)'};
   width: 70%;
   max-width: 300px;
-  height: calc(100vh - 54px); /* Adjusted to match new header height */
+  height: calc(100vh - 54px);
   padding: 2rem;
   margin: 0;
   list-style: none;
@@ -249,7 +245,7 @@ const MobileNavLink = styled.a<{ $darkMode?: boolean; $active?: boolean }>`
 `;
 
 /**
- * Navbar component with navigation links - optimized for side-by-side display
+ * Navbar component with navigation links - Updated with Home section and reordered links
  */
 const Navbar: React.FC<NavbarProps> = ({ darkMode, activeSection, visible }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -275,8 +271,9 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, activeSection, visible }) => 
     }
   };
 
-  // Navigation links for both desktop and mobile
+  // Navigation links for both desktop and mobile - updated with Home first and About last
   const navigationLinks = [
+    { id: 'home', label: 'Home' },
     { id: 'services', label: 'Services' },
     { id: 'portfolio', label: 'Portfolio' },
     { id: 'contact', label: 'Contact' },
