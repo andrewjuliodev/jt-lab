@@ -1,4 +1,4 @@
-// src/components/Header.tsx - With properly integrated navbar (side-by-side)
+// src/components/Header.tsx - With slightly larger navbar and toggle button
 import React from 'react';
 import styled, { keyframes, css } from 'styled-components';
 import Navbar from './Navbar'; // Import the Navbar component
@@ -53,7 +53,7 @@ const HeaderContainer = styled.div<{ $darkMode?: boolean; $visible: boolean }>`
   top: 0;
   left: 0;
   width: 100%;
-  height: 46px;
+  height: 54px; /* Increased from 46px */
   display: flex;
   align-items: center;
   padding: 0 10%;
@@ -97,13 +97,13 @@ const Logo = styled.div<{ $darkMode: boolean }>`
 `;
 
 const ThemeToggle = styled.button<{ $darkMode?: boolean }>`
-  /* Fixed size */
-  width: 24px !important;
-  height: 24px !important;
-  min-width: 24px !important;
-  min-height: 24px !important;
-  max-width: 24px !important;
-  max-height: 24px !important;
+  /* Increased size */
+  width: 28px !important; /* Increased from 24px */
+  height: 28px !important; /* Increased from 24px */
+  min-width: 28px !important; /* Increased from 24px */
+  min-height: 28px !important; /* Increased from 24px */
+  max-width: 28px !important; /* Increased from 24px */
+  max-height: 28px !important; /* Increased from 24px */
   
   /* Styling */
   background: ${props => props.$darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)'};
@@ -130,8 +130,8 @@ const ThemeToggle = styled.button<{ $darkMode?: boolean }>`
   }
   
   svg {
-    width: 12px;
-    height: 12px;
+    width: 14px; /* Increased from 12px */
+    height: 14px; /* Increased from 12px */
   }
 `;
 

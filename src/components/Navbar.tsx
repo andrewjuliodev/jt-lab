@@ -1,4 +1,4 @@
-// src/components/Navbar.tsx - Optimized for side-by-side display in Header
+// src/components/Navbar.tsx - With slightly larger elements
 import React, { useState } from 'react';
 import styled, { keyframes, css } from 'styled-components';
 
@@ -72,7 +72,7 @@ interface NavbarProps {
 // Styled Components
 const NavbarContainer = styled.nav<{ $visible: boolean }>`
   /* Position it as a regular element to be used inside header */
-  height: 46px;
+  height: 54px; /* Increased from 46px to match header height */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -87,7 +87,7 @@ const NavbarContainer = styled.nav<{ $visible: boolean }>`
 
 const NavList = styled.ul<{ $mobileMenuOpen?: boolean; $darkMode?: boolean }>`
   display: flex;
-  gap: 2rem;
+  gap: 2.2rem; /* Slightly increased from 2rem */
   list-style: none;
   margin: 0;
   padding: 0;
@@ -107,9 +107,9 @@ const NavLink = styled.a<{ $darkMode?: boolean; $active?: boolean }>`
   color: ${props => props.$darkMode ? COLORS.WHITE : COLORS.BLACK};
   text-decoration: none;
   font-weight: 500;
-  font-size: 0.95rem; /* Slightly smaller for better fit in header */
+  font-size: 1.05rem; /* Increased from 0.95rem */
   transition: text-shadow 0.3s ease, color 0.8s ease-in-out;
-  padding: 5px 8px;
+  padding: 6px 10px; /* Increased from 5px 8px */
   position: relative;
   
   &::after {
@@ -157,10 +157,10 @@ const MobileNavContainer = styled.div<{ $visible: boolean }>`
 
 const BurgerMenu = styled.button<{ $darkMode?: boolean; $open?: boolean }>`
   position: fixed;
-  top: 23px; /* Center with header height */
+  top: 27px; /* Increased from 23px to center with new header height */
   right: 10%;
-  width: 36px;
-  height: 36px;
+  width: 38px; /* Increased from 36px */
+  height: 38px; /* Increased from 36px */
   background: transparent;
   border: none;
   cursor: pointer;
@@ -172,7 +172,7 @@ const BurgerMenu = styled.button<{ $darkMode?: boolean; $open?: boolean }>`
 `;
 
 const BurgerLine = styled.span<{ $darkMode?: boolean; $open?: boolean; $lineIndex?: number }>`
-  width: 30px;
+  width: 32px; /* Increased from 30px */
   height: 3px;
   background-color: ${props => props.$darkMode ? COLORS.WHITE : '#333'};
   transition: all 0.3s ease-in-out;
@@ -190,14 +190,14 @@ const BurgerLine = styled.span<{ $darkMode?: boolean; $open?: boolean; $lineInde
 
 const MobileNavList = styled.ul<{ $mobileMenuOpen?: boolean; $darkMode?: boolean }>`
   position: fixed;
-  top: 46px; /* Position right below header */
+  top: 54px; /* Increased from 46px to match new header height */
   right: ${props => props.$mobileMenuOpen ? '0' : '-100%'};
   flex-direction: column;
   gap: 1.5rem;
   background: ${props => props.$darkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.7)'};
   width: 70%;
   max-width: 300px;
-  height: calc(100vh - 46px);
+  height: calc(100vh - 54px); /* Adjusted to match new header height */
   padding: 2rem;
   margin: 0;
   list-style: none;
