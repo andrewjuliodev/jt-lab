@@ -1,70 +1,24 @@
-// src/App.tsx with vertical section indicators and neumorphic elements
+// src/App.tsx with enhanced transitions and removed neumorphic elements
 import React, { useState, useEffect } from 'react';
 import IntroAnimation from './components/animations/IntroAnimation';
+import FadeTransition, { ContentRevealer } from './components/animations/FadeTransition';
 import Header from './components/Header';
 import ServicesSection from './components/sections/ServicesSection';
 import { PortfolioSection, ContactSection, AboutSection } from './components/sections/DummySections';
-import VerticalSectionIndicator from './components/VerticalSectionIndicator.tsx';
-import NeumorphicElements from './components/backgrounds/NeumorphicElements.tsx';
+import VerticalSectionIndicator from './components/VerticalSectionIndicator';
 import styled from 'styled-components';
 import GlobalStyle from './styles/GlobalStyle';
 
-// Add subtle neumorphic background pattern
-const NeumorphicBackground = styled.div<{ $darkMode: boolean }>`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -10;
-  background-color: ${props => props.$darkMode ? 'rgb(30, 31, 31)' : '#f0f0f0'};
-  
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: ${props => props.$darkMode 
-      ? `radial-gradient(circle at 20% 30%, rgba(50, 50, 50, 0.1) 0%, transparent 20%),
-         radial-gradient(circle at 80% 60%, rgba(50, 50, 50, 0.15) 0%, transparent 20%)`
-      : `radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.7) 0%, transparent 25%),
-         radial-gradient(circle at 80% 60%, rgba(255, 255, 255, 0.7) 0%, transparent 25%)`
-    };
-    opacity: 0.4;
-    z-index: -9;
-  }
-  
-  &::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: ${props => props.$darkMode 
-      ? 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23333333\' fill-opacity=\'0.05\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")'
-      : 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23cccccc\' fill-opacity=\'0.2\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")'
-    };
-    opacity: 0.25;
-    z-index: -8;
-  }
-`;
-
 const AppContainer = styled.div<{ $darkMode: boolean }>`
   min-height: 100vh;
+  background-color: ${props => props.$darkMode ? 'rgb(30, 31, 31)' : '#f0f0f0'};
   transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
-`;
-
-const Content = styled.div<{ $introComplete: boolean }>`
-  opacity: ${props => props.$introComplete ? 1 : 0};
-  transition: opacity 0.5s ease-in-out;
 `;
 
 const App: React.FC = () => {
   // Animation sequence state
   const [introComplete, setIntroComplete] = useState(false);
+  const [fadeTransitionActive, setFadeTransitionActive] = useState(false);
   const [mainContentVisible, setMainContentVisible] = useState(false);
   
   const [darkMode, setDarkMode] = useState(false);
@@ -87,13 +41,18 @@ const App: React.FC = () => {
     localStorage.setItem('darkMode', isDarkMode ? 'true' : 'false');
   };
   
-  // Handle animation completion
+  // Handle animation completion - improved transition timing
   const handleIntroComplete = () => {
     setIntroComplete(true);
+    
+    // First, show the overlay with a solid color
+    setFadeTransitionActive(true);
+    
+    // Wait a brief moment before fading the overlay out
     setTimeout(() => {
-      setMainContentVisible(true);
-      setActiveSection('services');
-    }, 300);
+      // Start fading out the overlay
+      setFadeTransitionActive(false);
+    }, 200); // Short delay before fade begins to ensure smooth transition
   };
 
   // Handle section click from vertical indicator
@@ -161,18 +120,6 @@ const App: React.FC = () => {
     <>
       <GlobalStyle />
       <AppContainer $darkMode={darkMode}>
-        {/* Neumorphic Background */}
-        <NeumorphicBackground $darkMode={darkMode} />
-        
-        {/* Add floating neumorphic elements with medium density */}
-        {mainContentVisible && (
-          <NeumorphicElements 
-            darkMode={darkMode}
-            density="medium"
-            animated={true}
-          />
-        )}
-        
         {/* Show intro animation */}
         {!introComplete && (
           <IntroAnimation 
@@ -182,31 +129,46 @@ const App: React.FC = () => {
           />
         )}
         
+        {/* Improved fade transition overlay */}
+        <FadeTransition 
+          show={fadeTransitionActive}
+          duration={0.8}
+          backgroundColor={darkMode ? "#1e1f1f" : "#ffffff"}
+          onComplete={() => {
+            setMainContentVisible(true);
+            setActiveSection('services');
+          }}
+        />
+        
         {/* Show header and content after animation completes */}
         {mainContentVisible && (
           <>
-            <Header 
-              darkMode={darkMode} 
-              onToggleTheme={() => handleThemeToggle(!darkMode)} 
-              visible={true}
-              activeSection={activeSection || undefined}
-            />
+            <ContentRevealer visible={mainContentVisible} delay={0.1}>
+              <Header 
+                darkMode={darkMode} 
+                onToggleTheme={() => handleThemeToggle(!darkMode)} 
+                visible={true}
+                activeSection={activeSection || undefined}
+              />
+            </ContentRevealer>
             
             {/* Vertical Section Indicators */}
-            <VerticalSectionIndicator
-              sections={sections}
-              activeSection={activeSection}
-              darkMode={darkMode}
-              onSectionClick={handleSectionClick}
-            />
+            <ContentRevealer visible={mainContentVisible} delay={0.2}>
+              <VerticalSectionIndicator
+                sections={sections}
+                activeSection={activeSection}
+                darkMode={darkMode}
+                onSectionClick={handleSectionClick}
+              />
+            </ContentRevealer>
             
-            <Content $introComplete={mainContentVisible}>
+            <ContentRevealer visible={mainContentVisible}>
               {/* Include the sections */}
               <ServicesSection id="services" darkMode={darkMode} />
               <PortfolioSection id="portfolio" darkMode={darkMode} />
               <ContactSection id="contact" darkMode={darkMode} />
               <AboutSection id="about" darkMode={darkMode} />
-            </Content>
+            </ContentRevealer>
           </>
         )}
       </AppContainer>
