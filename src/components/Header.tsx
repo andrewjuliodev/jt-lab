@@ -1,6 +1,7 @@
-// src/components/Header.tsx - Fixed alignment of all elements
+// src/components/Header.tsx - With properly integrated navbar (side-by-side)
 import React from 'react';
 import styled, { keyframes, css } from 'styled-components';
+import Navbar from './Navbar'; // Import the Navbar component
 
 // Constants
 const COLORS = {
@@ -54,13 +55,25 @@ const HeaderContainer = styled.div<{ $darkMode?: boolean; $visible: boolean }>`
   width: 100%;
   height: 46px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
   padding: 0 10%;
   z-index: 1000;
   background: transparent;
   opacity: ${props => props.$visible ? 1 : 0};
   transition: opacity 0.5s ease-in-out;
+  pointer-events: ${props => props.$visible ? 'auto' : 'none'};
+`;
+
+const HeaderLeft = styled.div`
+  flex: 1;
+  display: flex;
+  align-items: center;
+`;
+
+const HeaderRight = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 `;
 
 const Logo = styled.div<{ $darkMode: boolean }>`
@@ -102,6 +115,7 @@ const ThemeToggle = styled.button<{ $darkMode?: boolean }>`
   cursor: pointer;
   padding: 0 !important;
   margin: 0 !important;
+  margin-left: 20px !important; /* Add margin to separate from navbar */
   box-shadow: ${props => props.$darkMode 
     ? '0 0 8px rgba(255, 255, 255, 0.2)' 
     : '0 2px 8px rgba(0, 0, 0, 0.15)'};
@@ -121,37 +135,71 @@ const ThemeToggle = styled.button<{ $darkMode?: boolean }>`
   }
 `;
 
+// Navigation-specific styles that won't conflict with Navbar component
+const NavbarWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  
+  /* Hide the navbar wrapper on mobile */
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
 /**
- * Simplified Header component
+ * Header component with Navbar integrated properly
  */
-const Header: React.FC<HeaderProps> = ({ darkMode, onToggleTheme, visible }) => {
+const Header: React.FC<HeaderProps> = ({ darkMode, onToggleTheme, visible, activeSection }) => {
+  const handleThemeToggle = () => {
+    console.log("Theme toggle clicked, current darkMode:", darkMode);
+    onToggleTheme();
+  };
+
+  const handleLogoClick = () => {
+    console.log("Logo clicked, scrolling to top");
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <HeaderContainer $darkMode={darkMode} $visible={visible}>
-      {/* Logo */}
-      <Logo 
-        $darkMode={darkMode}
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-      >
-        JT Lab
-      </Logo>
-
-      {/* Theme toggle button */}
-      <ThemeToggle
-        $darkMode={darkMode}
-        onClick={onToggleTheme}
-        aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
-      >
-        {darkMode ? (
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="5" stroke="#fff" strokeWidth="2"/>
-            <path d="M12 4V2M12 22V20M20 12H22M2 12H4" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
-        ) : (
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="rgba(0, 0, 0, 0.3)" />
-          </svg>
-        )}
-      </ThemeToggle>
+      {/* Left side: Logo */}
+      <HeaderLeft>
+        <Logo 
+          $darkMode={darkMode}
+          onClick={handleLogoClick}
+        >
+          JT Lab
+        </Logo>
+      </HeaderLeft>
+      
+      {/* Center: Navbar */}
+      <NavbarWrapper>
+        <Navbar 
+          darkMode={darkMode} 
+          visible={visible} 
+          activeSection={activeSection}
+        />
+      </NavbarWrapper>
+      
+      {/* Right side: Theme toggle */}
+      <HeaderRight>
+        <ThemeToggle
+          $darkMode={darkMode}
+          onClick={handleThemeToggle}
+          aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+        >
+          {darkMode ? (
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="5" stroke="#fff" strokeWidth="2"/>
+              <path d="M12 4V2M12 22V20M20 12H22M2 12H4" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="rgba(0, 0, 0, 0.3)" />
+            </svg>
+          )}
+        </ThemeToggle>
+      </HeaderRight>
     </HeaderContainer>
   );
 };
