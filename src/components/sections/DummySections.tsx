@@ -1,4 +1,4 @@
-// src/components/sections/DummySections.tsx
+// src/components/sections/DummySections.tsx - Added hideHeader prop
 import React from 'react';
 import styled from 'styled-components';
 
@@ -29,35 +29,14 @@ const SectionContainer = styled.section<{ $darkMode: boolean; $color: string }>`
   align-items: center;
   text-align: center;
   position: relative;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 5px;
-    background: linear-gradient(to right, ${COLORS.GLOW_MEDIUM}, transparent);
-  }
 `;
 
-const SectionTitle = styled.h2<{ $darkMode: boolean }>`
+const SectionTitle = styled.h2<{ $darkMode: boolean; $hidden?: boolean }>`
   font-size: 3.5rem;
   margin-bottom: 2rem;
   font-family: "Cal Sans", sans-serif;
   position: relative;
-  display: inline-block;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background-color: ${COLORS.GLOW};
-    box-shadow: 0 0 10px ${COLORS.GLOW_MEDIUM};
-  }
+  display: ${props => props.$hidden ? 'none' : 'inline-block'};
 `;
 
 const SectionContent = styled.div`
@@ -89,11 +68,20 @@ const DummyButton = styled.button<{ $darkMode: boolean }>`
   }
 `;
 
+// Section component interfaces
+interface SectionProps {
+  id: string;
+  darkMode: boolean;
+  hideHeader?: boolean;
+}
+
 // Portfolio Section Component
-export const PortfolioSection: React.FC<{ id: string; darkMode: boolean }> = ({ id, darkMode }) => {
+export const PortfolioSection: React.FC<SectionProps> = ({ id, darkMode, hideHeader }) => {
   return (
     <SectionContainer id={id} $darkMode={darkMode} $color="rgba(58, 186, 170, 0.15)">
-      <SectionTitle $darkMode={darkMode}>Portfolio</SectionTitle>
+      {!hideHeader && (
+        <SectionTitle $darkMode={darkMode}>Portfolio</SectionTitle>
+      )}
       <SectionContent>
         <PlaceholderText>
           Explore our collection of successful projects that showcase our expertise in web development.
@@ -110,10 +98,12 @@ export const PortfolioSection: React.FC<{ id: string; darkMode: boolean }> = ({ 
 };
 
 // Contact Section Component
-export const ContactSection: React.FC<{ id: string; darkMode: boolean }> = ({ id, darkMode }) => {
+export const ContactSection: React.FC<SectionProps> = ({ id, darkMode, hideHeader }) => {
   return (
     <SectionContainer id={id} $darkMode={darkMode} $color="rgba(58, 186, 170, 0.25)">
-      <SectionTitle $darkMode={darkMode}>Contact Us</SectionTitle>
+      {!hideHeader && (
+        <SectionTitle $darkMode={darkMode}>Contact Us</SectionTitle>
+      )}
       <SectionContent>
         <PlaceholderText>
           Have a project in mind? We'd love to hear from you! Reach out to us using the contact information
@@ -146,10 +136,12 @@ export const ContactSection: React.FC<{ id: string; darkMode: boolean }> = ({ id
 };
 
 // About Section Component
-export const AboutSection: React.FC<{ id: string; darkMode: boolean }> = ({ id, darkMode }) => {
+export const AboutSection: React.FC<SectionProps> = ({ id, darkMode, hideHeader }) => {
   return (
     <SectionContainer id={id} $darkMode={darkMode} $color="rgba(58, 186, 170, 0.35)">
-      <SectionTitle $darkMode={darkMode}>About Me</SectionTitle>
+      {!hideHeader && (
+        <SectionTitle $darkMode={darkMode}>About Me</SectionTitle>
+      )}
       <SectionContent>
         <PlaceholderText>
           Hi, I'm Julio Tompsett, a passionate web developer with expertise in creating modern,

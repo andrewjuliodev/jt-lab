@@ -1,11 +1,10 @@
-// src/App.tsx with enhanced transitions and removed neumorphic elements
+// src/App.tsx with minimal UI - no side menu or section headers
 import React, { useState, useEffect } from 'react';
 import IntroAnimation from './components/animations/IntroAnimation';
 import FadeTransition, { ContentRevealer } from './components/animations/FadeTransition';
 import Header from './components/Header';
 import ServicesSection from './components/sections/ServicesSection';
 import { PortfolioSection, ContactSection, AboutSection } from './components/sections/DummySections';
-import VerticalSectionIndicator from './components/VerticalSectionIndicator';
 import styled from 'styled-components';
 import GlobalStyle from './styles/GlobalStyle';
 
@@ -23,9 +22,6 @@ const App: React.FC = () => {
   
   const [darkMode, setDarkMode] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
-  
-  // Sections array for vertical indicators
-  const sections = ['services', 'portfolio', 'contact', 'about'];
   
   // Load dark mode preference from localStorage
   useEffect(() => {
@@ -53,14 +49,6 @@ const App: React.FC = () => {
       // Start fading out the overlay
       setFadeTransitionActive(false);
     }, 200); // Short delay before fade begins to ensure smooth transition
-  };
-
-  // Handle section click from vertical indicator
-  const handleSectionClick = (section: string) => {
-    const element = document.getElementById(section);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
   };
 
   // Set initial body class when the component mounts
@@ -152,22 +140,12 @@ const App: React.FC = () => {
               />
             </ContentRevealer>
             
-            {/* Vertical Section Indicators */}
-            <ContentRevealer visible={mainContentVisible} delay={0.2}>
-              <VerticalSectionIndicator
-                sections={sections}
-                activeSection={activeSection}
-                darkMode={darkMode}
-                onSectionClick={handleSectionClick}
-              />
-            </ContentRevealer>
-            
             <ContentRevealer visible={mainContentVisible}>
-              {/* Include the sections */}
-              <ServicesSection id="services" darkMode={darkMode} />
-              <PortfolioSection id="portfolio" darkMode={darkMode} />
-              <ContactSection id="contact" darkMode={darkMode} />
-              <AboutSection id="about" darkMode={darkMode} />
+              {/* Include the sections but hide their headers */}
+              <ServicesSection id="services" darkMode={darkMode} hideHeader={true} />
+              <PortfolioSection id="portfolio" darkMode={darkMode} hideHeader={true} />
+              <ContactSection id="contact" darkMode={darkMode} hideHeader={true} />
+              <AboutSection id="about" darkMode={darkMode} hideHeader={true} />
             </ContentRevealer>
           </>
         )}

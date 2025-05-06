@@ -1,15 +1,9 @@
-// src/components/Header.tsx - Increased header height by an additional 1%
-import React, { useState, useEffect } from 'react';
+// src/components/Header.tsx - Fixed logo link and toggle glow
+import React, { useState } from 'react';
 import styled, { keyframes, css } from 'styled-components';
-import Navbar from './Navbar';
 
 // Constants
-export const POSITION = {
-  HEADER_TOP: "30px",
-  HEADER_LEFT: "10%"
-};
-
-export const COLORS = {
+const COLORS = {
   GLOW: 'rgba(132,227,215, 1.0)',
   GLOW_MEDIUM: 'rgba(132,227,215, 0.8)',
   GLOW_LIGHT: 'rgba(132,227,215, 0.6)',
@@ -24,18 +18,12 @@ export const COLORS = {
   BLACK: '#000'
 };
 
-export const DURATION = {
-  FADE_NORMAL: 0.8,
-  BULLET: 1.2,
-  GLOW_TRANSITION: 2.0
-};
-
-// Animation keyframes - keeping only the ones we use
+// Animation keyframes
 const continuousGlowBurst = keyframes`
   0% {
     text-shadow:
-      0 0 4px ${COLORS.GLOW_LIGHTEST}, /* Increased from 3px */
-      0 0 7px ${COLORS.GLOW_FAINT};    /* Increased from 5px */
+      0 0 4px ${COLORS.GLOW_LIGHTEST},
+      0 0 7px ${COLORS.GLOW_FAINT};
   }
   50% {
     text-shadow:
@@ -45,29 +33,46 @@ const continuousGlowBurst = keyframes`
   }
   100% {
     text-shadow:
-      0 0 4px ${COLORS.GLOW_LIGHTEST}, /* Increased from 3px */
-      0 0 7px ${COLORS.GLOW_FAINT};    /* Increased from 5px */
+      0 0 4px ${COLORS.GLOW_LIGHTEST},
+      0 0 7px ${COLORS.GLOW_FAINT};
   }
 `;
 
-const moveBullet = keyframes`
+const glowBurst = keyframes`
   0% {
-    left: -20px;
-    width: 20px;
+    text-shadow:
+      0 0 2px ${COLORS.GLOW_LIGHTEST},
+      0 0 5px ${COLORS.GLOW_FAINT};
+  }
+  50% {
+    text-shadow:
+      0 0 10px ${COLORS.GLOW_MEDIUM},
+      0 0 20px ${COLORS.GLOW_LIGHT},
+      0 0 30px ${COLORS.GLOW_LIGHTER};
   }
   100% {
-    left: 100%;
-    width: 20px;
+    text-shadow:
+      0 0 5px ${COLORS.GLOW_LIGHTER},
+      0 0 8px ${COLORS.GLOW_LIGHTEST};
   }
 `;
 
-const drawBorder = keyframes`
-  from {
-    width: 0;
+// Toggle button glow effect
+const toggleGlow = keyframes`
+  0% {
+    box-shadow: 0 0 5px ${COLORS.GLOW_LIGHTEST}, 0 0 10px ${COLORS.GLOW_FAINT};
   }
-  to {
-    width: 100%;
+  50% {
+    box-shadow: 0 0 15px ${COLORS.GLOW}, 0 0 20px ${COLORS.GLOW_MEDIUM}, 0 0 30px ${COLORS.GLOW_LIGHT};
   }
+  100% {
+    box-shadow: 0 0 5px ${COLORS.GLOW_LIGHTEST}, 0 0 10px ${COLORS.GLOW_FAINT};
+  }
+`;
+
+const fadeIn = keyframes`
+  from { opacity: 0; }
+  to   { opacity: 1; }
 `;
 
 // Types
@@ -78,67 +83,58 @@ interface HeaderProps {
   activeSection?: string;
 }
 
-// Styled Components
+// Header Styled Components
 const HeaderContainer = styled.div<{ $darkMode?: boolean; $visible: boolean }>`
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  height: 46px; /* Increased by an additional 1% (from 42px to 46px) */
+  height: 46px;
   z-index: 998;
-  /* Header is now transparent */
   background: transparent;
   opacity: ${props => props.$visible ? 1 : 0};
   transition: all 0.8s ease-in-out, opacity 0.5s ease-in-out;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 10%;
 `;
 
-const HeaderBorder = styled.div<{ $show: boolean; $darkMode?: boolean }>`
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 2px;
-  background-color: rgb(132,227,200);
-  width: ${props => props.$show ? '100%' : '0'};
-  animation: ${props => props.$show ? css`${drawBorder} 1.2s ease-out forwards` : 'none'};
-  z-index: 2;
-  transition: width 0.2s ease-out;
+// Logo with glow effect
+const Logo = styled.div<{ $darkMode: boolean }>`
+  font-family: "Cal Sans", sans-serif;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: ${props => props.$darkMode ? COLORS.WHITE : COLORS.BLACK};
+  cursor: pointer;
+  z-index: 1001;
+  animation: ${css`${continuousGlowBurst} 3s ease-in-out infinite`};
+  
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
+  
+  &:hover {
+    text-shadow: 
+      0 0 5px rgb(58, 186, 170),
+      0 0 10px rgb(58, 186, 170),
+      0 0 15px rgb(58, 186, 170),
+      0 0 20px rgba(58, 186, 170, 0.5);
+  }
 `;
 
-const HeaderBullet = styled.div<{ $animate: boolean }>`
-  position: absolute;
-  bottom: -4px;
-  width: 20px;
-  height: 10px;
-  background-color: rgb(132,227,215);
-  border-radius: 5px;
-  opacity: ${props => props.$animate ? 1 : 0};
-  animation: ${props => props.$animate ? css`${moveBullet} 1.2s ease-out forwards` : 'none'};
-  box-shadow: 0 0 10px rgb(132,227,215);
-  z-index: 2;
-`;
-
-const DarkModeBullet = styled.div<{ $animate: boolean }>`
-  position: absolute;
-  bottom: -4px;
-  width: 20px;
-  height: 10px;
-  background-color: rgb(132,227,215);
-  border-radius: 5px;
-  opacity: ${props => props.$animate ? 1 : 0};
-  animation: ${props => props.$animate ? css`${moveBullet} 1.2s ease-out forwards` : 'none'};
-  box-shadow: 0 0 15px rgb(132,227,215), 0 0 30px rgb(132,227,215);
-  z-index: 2;
-`;
-
+// Theme toggle with glow on hover
 const ThemeToggle = styled.button<{ $darkMode?: boolean; $visible?: boolean }>`
-  position: fixed;
-  top: 23px; /* Adjusted to match increased header height */
-  right: 10%;
-  transform: translateY(-50%);
-  width: 32px;
-  height: 32px;
+  /* 29px size */
+  width: 29px !important;
+  height: 29px !important;
+  min-width: 29px !important;
+  min-height: 29px !important;
+  max-width: 29px !important;
+  max-height: 29px !important;
+  
   background: ${props => props.$darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)'};
-  border: 2px solid ${props => props.$darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.5)'};
+  border: 1px solid ${props => props.$darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.5)'};
   border-radius: 50%;
   cursor: pointer;
   display: flex;
@@ -149,106 +145,210 @@ const ThemeToggle = styled.button<{ $darkMode?: boolean; $visible?: boolean }>`
   visibility: ${props => props.$visible ? 'visible' : 'hidden'};
   opacity: ${props => props.$visible ? 1 : 0};
   z-index: 9999;
-  box-shadow: ${props => props.$darkMode 
-    ? '0 0 15px rgba(255, 255, 255, 0.3), 0 0 5px rgba(132, 227, 215, 0.4)' 
-    : '0 4px 15px rgba(0, 0, 0, 0.3), 0 0 5px rgba(132, 227, 215, 0.3)'};
+  padding: 0;
   
   &:hover {
     background: ${props => props.$darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)'};
-    box-shadow: 0 0 15px rgba(132, 227, 215, 0.6), 0 0 30px rgba(132, 227, 215, 0.4);
-    transform: translateY(-50%) scale(1.08);
+    animation: ${toggleGlow} 1.5s ease-in-out infinite;
+    transform: scale(1.05);
   }
   
   &:active {
-    transform: translateY(-50%) scale(0.95);
+    transform: scale(0.95);
   }
   
-  @media (max-width: 768px) {
-    right: 25%;
+  svg {
+    width: 17px;
+    height: 17px;
   }
 `;
 
-const Logo = styled.div<{ $darkMode: boolean }>`
+// Navbar Styled Components
+const NavbarContainer = styled.nav<{ $visible: boolean }>`
   position: fixed;
-  top: 23px; /* Adjusted to match increased header height */
-  left: 10%;
-  transform: translateY(-50%);
-  font-family: "Cal Sans", sans-serif;
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: ${props => props.$darkMode ? COLORS.WHITE : COLORS.BLACK};
-  cursor: pointer;
-  z-index: 1001;
-  /* Enhanced continuous glow animation for minimum state */
-  animation: ${css`${continuousGlowBurst} 3s ease-in-out infinite`};
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 42px;
+  z-index: 1000;
+  opacity: ${props => props.$visible ? 1 : 0};
+  transition: opacity 0.5s ease-in-out;
+  pointer-events: ${props => props.$visible ? 'auto' : 'none'};
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const NavbarGlow = styled.div`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, ${COLORS.GLOW}, transparent);
+  opacity: 0.6;
+`;
+
+const NavList = styled.ul<{ $mobileMenuOpen?: boolean; $darkMode?: boolean }>`
+  display: flex;
+  gap: 3rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 200;
+  transition: color 0.8s ease-in-out;
+  /* Enhanced glassmorphism for navbar only */
+  background: ${props => props.$darkMode ? 
+    'rgba(0, 0, 0, 0.7)' : 
+    'rgba(255, 255, 255, 0.1)'};
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 7px 30px;
+  border-radius: 25px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  animation: ${fadeIn} 0.5s ease-in-out;
   
   @media (max-width: 768px) {
-    font-size: 1.5rem;
-  }
-  
-  /* Enhanced hover glow effect */
-  &:hover {
-    text-shadow: 
-      0 0 5px rgb(58, 186, 170),
-      0 0 10px rgb(58, 186, 170),
-      0 0 15px rgb(58, 186, 170),
-      0 0 20px rgba(58, 186, 170, 0.5); /* Added extra layer of glow */
+    position: fixed;
+    top: 42px;
+    right: ${props => props.$mobileMenuOpen ? '0' : '-100%'};
+    flex-direction: column;
+    gap: 1.5rem;
+    background: ${props => props.$darkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.7)'};
+    width: 70%;
+    max-width: 300px;
+    height: calc(100vh - 42px);
+    padding: 2rem;
+    margin-left: 0;
+    transition: right 0.3s ease-in-out, background-color 0.8s ease-in-out;
+    align-items: center;
+    justify-content: flex-start;
+    border-radius: 0;
   }
 `;
 
-// SVG Icons
-const SunIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="12" cy="12" r="5" stroke="#fff" strokeWidth="2"/>
-    <path d="M12 4V2" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M12 22V20" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M20 12H22" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M2 12H4" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M19.1421 5.44446L20.5563 4.03024" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M3.94366 20.5563L5.35788 19.1421" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M19.1421 19.1421L20.5563 20.5563" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M3.94366 4.03024L5.35788 5.44446" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-  </svg>
-);
+const NavItem = styled.li`
+  position: relative;
+  margin: 0 5px;
+  
+  @media (max-width: 768px) {
+    margin: 10px 0;
+    width: 100%;
+    text-align: center;
+  }
+`;
 
-const MoonIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="rgba(0, 0, 0, 0.3)" />
-  </svg>
-);
+const NavLink = styled.a<{ $darkMode?: boolean; $active?: boolean }>`
+  color: ${props => props.$darkMode ? COLORS.WHITE : COLORS.BLACK};
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1.1rem;
+  transition: text-shadow 0.3s ease, color 0.8s ease-in-out;
+  padding: 5px 12px;
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: ${props => props.$active ? '50%' : '0'};
+    height: 2px;
+    background-color: rgb(132,227,215);
+    transition: width 0.3s ease;
+  }
+  
+  &:hover {
+    animation: ${css`${glowBurst} 1s ease-out infinite`};
+    
+    &::after {
+      width: 50%;
+    }
+  }
+  
+  /* Apply continuous glow animation for active sections */
+  ${props => props.$active && css`
+    animation: ${continuousGlowBurst} 3s ease-in-out infinite;
+  `}
+  
+  @media (max-width: 768px) {
+    color: #fff;
+    font-size: 1.5rem;
+    padding: 12px 20px;
+    display: inline-block;
+  }
+`;
+
+const BurgerMenu = styled.button<{ $darkMode?: boolean; $open?: boolean }>`
+  display: none;
+  position: fixed;
+  top: 21px;
+  right: 10%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 1002;
+  
+  @media (max-width: 768px) {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+  }
+`;
+
+const BurgerLine = styled.span<{ $darkMode?: boolean; $open?: boolean; $lineIndex?: number }>`
+  width: 30px;
+  height: 3px;
+  background-color: ${props => props.$darkMode ? COLORS.WHITE : '#333'};
+  transition: all 0.3s ease-in-out;
+  position: relative;
+  
+  transform: ${props => {
+    if (props.$open && props.$lineIndex === 1) return 'rotate(45deg) translate(5px, 5px)';
+    if (props.$open && props.$lineIndex === 3) return 'rotate(-45deg) translate(5px, -5px)';
+    if (props.$open && props.$lineIndex === 2) return 'opacity: 0';
+    return 'none';
+  }};
+  
+  opacity: ${props => props.$open && props.$lineIndex === 2 ? 0 : 1};
+`;
 
 /**
- * Header component with navigation and theme toggle
+ * Header component with integrated navbar functionality
  */
 const Header: React.FC<HeaderProps> = ({ darkMode, onToggleTheme, visible, activeSection }) => {
-  // Use a constant instead of useState to fix the "unused setter" error
-  const headerBorderVisible = true;
-  const [animateLightBullet, setAnimateLightBullet] = useState(false);
-  const [animateDarkBullet, setAnimateDarkBullet] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
-  // We no longer need the initial bullet animation effect
-  // The bullet animation will only be triggered when the theme toggle is used
-  useEffect(() => {
-    // No initialization needed
-  }, []);
+  // Toggle mobile menu
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
 
-  // Handle theme toggle with bullet animation
-  const handleThemeToggle = () => {
-    // Only trigger the bullet animation when it's a user-initiated theme change
-    const newDarkMode = !darkMode;
-    if (newDarkMode) {
-      setAnimateDarkBullet(true);
-      setTimeout(() => {
-        setAnimateDarkBullet(false);
-      }, DURATION.BULLET * 1000);
-    } else {
-      setAnimateLightBullet(true);
-      setTimeout(() => {
-        setAnimateLightBullet(false);
-      }, DURATION.BULLET * 1000);
+  // Handle smooth scrolling to sections
+  const scrollToSection = (sectionId: string, e: React.MouseEvent) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      e.preventDefault();
+      element.scrollIntoView({ behavior: 'smooth' });
+      if (mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
     }
-    
-    onToggleTheme();
+  };
+
+  // Explicit scroll to top function for logo
+  const handleScrollToTop = () => {
+    console.log("Scrolling to top");
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   };
 
   return (
@@ -257,36 +357,97 @@ const Header: React.FC<HeaderProps> = ({ darkMode, onToggleTheme, visible, activ
         $darkMode={darkMode} 
         $visible={visible}
       >
-        <HeaderBorder $show={headerBorderVisible} $darkMode={darkMode} />
-        <HeaderBullet $animate={animateLightBullet} />
-        <DarkModeBullet $animate={animateDarkBullet} />
-      </HeaderContainer>
+        {/* Logo */}
+        <Logo 
+          $darkMode={darkMode}
+          onClick={handleScrollToTop}
+          role="button"
+          aria-label="Scroll to top"
+          tabIndex={0}
+          style={{ cursor: 'pointer' }}
+        >
+          JT Lab
+        </Logo>
 
-      {/* Logo */}
-      <Logo 
+        {/* Theme toggle button */}
+        <ThemeToggle
+          $darkMode={darkMode}
+          $visible={visible}
+          onClick={onToggleTheme}
+          aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+        >
+          {darkMode ? (
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="5" stroke="#fff" strokeWidth="2"/>
+              <path d="M12 4V2M12 22V20M20 12H22M2 12H4" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="rgba(0, 0, 0, 0.3)" />
+            </svg>
+          )}
+        </ThemeToggle>
+      </HeaderContainer>
+      
+      {/* Mobile menu burger */}
+      <BurgerMenu 
         $darkMode={darkMode}
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        $open={mobileMenuOpen}
+        onClick={toggleMobileMenu}
+        aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
         style={{ opacity: visible ? 1 : 0, transition: 'opacity 0.5s ease-in-out' }}
       >
-        JT Lab
-      </Logo>
-
-      {/* Theme toggle button */}
-      <ThemeToggle
-        $darkMode={darkMode}
-        $visible={visible}
-        onClick={handleThemeToggle}
-        aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
-      >
-        {darkMode ? <SunIcon /> : <MoonIcon />}
-      </ThemeToggle>
+        <BurgerLine $darkMode={darkMode} $open={mobileMenuOpen} $lineIndex={1} />
+        <BurgerLine $darkMode={darkMode} $open={mobileMenuOpen} $lineIndex={2} />
+        <BurgerLine $darkMode={darkMode} $open={mobileMenuOpen} $lineIndex={3} />
+      </BurgerMenu>
       
-      {/* Use the Navbar component for navigation - only pass the needed props */}
-      <Navbar 
-        darkMode={darkMode}
-        visible={visible}
-        activeSection={activeSection}
-      />
+      {/* Main navbar */}
+      <NavbarContainer $visible={visible}>
+        <NavbarGlow />
+        <NavList $mobileMenuOpen={mobileMenuOpen} $darkMode={darkMode}>
+          <NavItem>
+            <NavLink 
+              $darkMode={darkMode} 
+              href="#services" 
+              $active={activeSection === 'services'}
+              onClick={(e) => scrollToSection('services', e)}
+            >
+              Services
+            </NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink 
+              $darkMode={darkMode} 
+              href="#portfolio"
+              $active={activeSection === 'portfolio'}
+              onClick={(e) => scrollToSection('portfolio', e)}
+            >
+              Portfolio
+            </NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink 
+              $darkMode={darkMode} 
+              href="#contact"
+              $active={activeSection === 'contact'}
+              onClick={(e) => scrollToSection('contact', e)}
+            >
+              Contact
+            </NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink 
+              $darkMode={darkMode} 
+              href="#about"
+              $active={activeSection === 'about'}
+              onClick={(e) => scrollToSection('about', e)}
+            >
+              About
+            </NavLink>
+          </NavItem>
+        </NavList>
+      </NavbarContainer>
     </>
   );
 };

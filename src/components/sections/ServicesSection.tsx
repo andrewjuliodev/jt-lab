@@ -1,4 +1,4 @@
-// src/components/sections/ServicesSection.tsx - Updated with primary and secondary services
+// src/components/sections/ServicesSection.tsx - Updated with hideHeader prop
 import React from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
@@ -20,6 +20,7 @@ const COLORS = {
 interface ServicesSectionProps {
   id: string;
   darkMode: boolean;
+  hideHeader?: boolean;
 }
 
 interface ServiceProps {
@@ -41,13 +42,13 @@ const SectionContainer = styled.section<{ $darkMode: boolean }>`
   overflow: hidden;
 `;
 
-const SectionTitle = styled.h2<{ $darkMode: boolean }>`
+const SectionTitle = styled.h2<{ $darkMode: boolean; $hidden?: boolean }>`
   font-size: 3rem;
   text-align: center;
   margin-bottom: 2.5rem;
   font-family: "Cal Sans", sans-serif;
   position: relative;
-  display: inline-block;
+  display: ${props => props.$hidden ? 'none' : 'inline-block'};
   
   &::after {
     content: '';
@@ -61,8 +62,8 @@ const SectionTitle = styled.h2<{ $darkMode: boolean }>`
   }
 `;
 
-const TitleContainer = styled.div`
-  display: flex;
+const TitleContainer = styled.div<{ $hidden?: boolean }>`
+  display: ${props => props.$hidden ? 'none' : 'flex'};
   justify-content: center;
   width: 100%;
   margin-bottom: 3rem;
@@ -101,13 +102,14 @@ const SecondaryServicesContainer = styled.div`
   }
 `;
 
-const SectionDivider = styled.div<{ $darkMode: boolean }>`
+const SectionDivider = styled.div<{ $darkMode: boolean; $hidden?: boolean }>`
   position: relative;
   height: 2px;
   background: ${props => props.$darkMode 
     ? 'linear-gradient(to right, transparent, rgba(132,227,215, 0.8), transparent)' 
     : 'linear-gradient(to right, transparent, rgba(132,227,215, 0.5), transparent)'};
   margin: 1rem 0 3rem;
+  display: ${props => props.$hidden ? 'none' : 'block'};
   
   &::before {
     content: 'Other Services';
@@ -445,7 +447,7 @@ const itemVariants = {
 };
 
 // Component
-const ServicesSection: React.FC<ServicesSectionProps> = ({ id, darkMode }) => {
+const ServicesSection: React.FC<ServicesSectionProps> = ({ id, darkMode, hideHeader }) => {
   
   // Render a service card
   const renderServiceCard = (service: ServiceProps) => (
@@ -476,8 +478,8 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ id, darkMode }) => {
   
   return (
     <SectionContainer id={id} $darkMode={darkMode}>
-      <TitleContainer>
-        <SectionTitle $darkMode={darkMode}>Services</SectionTitle>
+      <TitleContainer $hidden={hideHeader}>
+        <SectionTitle $darkMode={darkMode} $hidden={hideHeader}>Services</SectionTitle>
       </TitleContainer>
       
       <ServicesWrapper>
@@ -494,7 +496,7 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ id, darkMode }) => {
         </motion.div>
         
         {/* Divider */}
-        <SectionDivider $darkMode={darkMode} />
+        <SectionDivider $darkMode={darkMode} $hidden={hideHeader} />
         
         {/* Secondary Services */}
         <motion.div
