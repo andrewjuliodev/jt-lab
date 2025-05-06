@@ -1,4 +1,4 @@
-// src/App.tsx with minimal UI - no side menu or section headers
+// src/App.tsx with direct theme toggle implementation
 import React, { useState, useEffect } from 'react';
 import IntroAnimation from './components/animations/IntroAnimation';
 import FadeTransition, { ContentRevealer } from './components/animations/FadeTransition';
@@ -23,19 +23,14 @@ const App: React.FC = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
   
-  // Load dark mode preference from localStorage
+  // Load dark mode preference from localStorage on initial load
   useEffect(() => {
+    console.log("Initial darkMode check from localStorage");
     const savedDarkMode = localStorage.getItem('darkMode');
     if (savedDarkMode === 'true') {
       setDarkMode(true);
     }
   }, []);
-  
-  // Handle theme toggle
-  const handleThemeToggle = (isDarkMode: boolean) => {
-    setDarkMode(isDarkMode);
-    localStorage.setItem('darkMode', isDarkMode ? 'true' : 'false');
-  };
   
   // Handle animation completion - improved transition timing
   const handleIntroComplete = () => {
@@ -85,6 +80,7 @@ const App: React.FC = () => {
       // Set active section based on the current section in view
       if (currentSection) {
         setActiveSection(currentSection.id);
+        console.log("Scroll detected, active section set to:", currentSection.id);
       }
     };
 
@@ -104,6 +100,15 @@ const App: React.FC = () => {
     }
   }, [mainContentVisible]);
 
+  // Direct toggle implementation that doesn't rely on a parameter
+  const toggleTheme = () => {
+    console.log("Theme toggle called in App component, current darkMode:", darkMode);
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    localStorage.setItem('darkMode', newDarkMode ? 'true' : 'false');
+    console.log("Theme set to:", newDarkMode ? "dark" : "light");
+  };
+
   return (
     <>
       <GlobalStyle />
@@ -112,7 +117,11 @@ const App: React.FC = () => {
         {!introComplete && (
           <IntroAnimation 
             onComplete={handleIntroComplete}
-            onThemeToggle={handleThemeToggle}
+            onThemeToggle={(isDark) => {
+              console.log("Theme toggle from intro animation:", isDark);
+              setDarkMode(isDark);
+              localStorage.setItem('darkMode', isDark ? 'true' : 'false');
+            }}
             darkMode={darkMode}
           />
         )}
@@ -134,7 +143,7 @@ const App: React.FC = () => {
             <ContentRevealer visible={mainContentVisible} delay={0.1}>
               <Header 
                 darkMode={darkMode} 
-                onToggleTheme={() => handleThemeToggle(!darkMode)} 
+                onToggleTheme={toggleTheme} 
                 visible={true}
                 activeSection={activeSection || undefined}
               />

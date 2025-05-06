@@ -1,4 +1,4 @@
-// src/components/animations/IntroAnimation.tsx
+// src/components/animations/IntroAnimation.tsx - Fixed subtitle glow issue
 import React, { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import styled, { keyframes, css } from 'styled-components';
@@ -164,6 +164,7 @@ const CenteredTextContainer = styled.div`
   }
 `;
 
+// Fixed subtitle container - increased z-index to bring it forward
 const SubtitleTextContainer = styled.div`
   position: fixed;
   top: calc(40% + 9vh);
@@ -172,7 +173,7 @@ const SubtitleTextContainer = styled.div`
   width: auto;
   max-width: 90%;
   text-align: center;
-  z-index: 5;
+  z-index: 25; /* Increased from 5 to 25 to bring it forward */
   font-family: "Montserrat", sans-serif;
   font-size: 1.3rem;
   font-weight: 400;
@@ -201,6 +202,7 @@ const MainJTLabText = styled(motion.div)<{ $powerGlow: boolean; $darkMode: boole
   text-shadow: ${props => !props.$powerGlow ? 'none' : 'inherit'};
 `;
 
+// Fixed: Isolated subtitle text from the main title's glow effect
 const SubtitleText = styled(motion.div)<{ $powerGlow: boolean; $darkMode: boolean }>`
   font-weight: 400;
   animation: ${props => props.$powerGlow ? css`${subtleGlowPulsate} 3s ease-in-out infinite` : 'none'};
@@ -210,6 +212,14 @@ const SubtitleText = styled(motion.div)<{ $powerGlow: boolean; $darkMode: boolea
   
   /* Ensure smooth fade-out of glow */
   text-shadow: ${props => !props.$powerGlow ? 'none' : 'inherit'};
+  
+  /* Added a subtle background to help isolate from the main title's glow */
+  background-color: ${props => props.$darkMode ? 'rgba(30, 31, 31, 0.7)' : 'rgba(255, 255, 255, 0.7)'};
+  padding: 5px 15px;
+  border-radius: 10px;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 `;
 
 const NameWrapper = styled(motion.div)`
@@ -515,7 +525,7 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
             </motion.div>
           </CenteredTextContainer>
           
-          {/* Subtitle text below Web Dev */}
+          {/* Subtitle text below Web Dev - Fixed with isolation layer */}
           {showSubtitleText && (
             <SubtitleTextContainer>
               <motion.div
@@ -542,7 +552,11 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
                 style={{
                   fontWeight: 400,
                   fontSize: windowWidth <= 768 ? "1.1rem" : "1.2rem",
-                  display: "inline-block"
+                  display: "inline-block",
+                  // Added background to isolate from glow
+                  backgroundColor: darkMode ? 'rgba(30, 31, 31, 0.7)' : 'rgba(255, 255, 255, 0.7)',
+                  padding: '5px 15px',
+                  borderRadius: '10px',
                 }}
               >
                 Crafting Custom Websites: Business, E-commerce, Portfolios & More
@@ -566,6 +580,7 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
             />
           </CenteredTextContainer>
           
+          {/* Subtitle with scramble effect - added background for isolation */}
           <SubtitleTextContainer>
             <ScrambleText 
               startText="Crafting Custom Websites: Business, E-commerce, Portfolios & More"
@@ -573,7 +588,13 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
               duration={1000}
               color={darkMode ? COLORS.TEXT_LIGHT : COLORS.TEXT_DARK}
               fontSize={windowWidth <= 768 ? "1.1rem" : "1.2rem"}
-              style={{ fontWeight: 400 }}
+              style={{ 
+                fontWeight: 400,
+                // Added background to isolate from glow
+                backgroundColor: darkMode ? 'rgba(30, 31, 31, 0.7)' : 'rgba(255, 255, 255, 0.7)',
+                padding: '5px 15px',
+                borderRadius: '10px',
+              }}
             />
           </SubtitleTextContainer>
         </>
@@ -603,6 +624,7 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
             </MainJTLabText>
           </CenteredTextContainer>
           
+          {/* Subtitle text with isolation from glow */}
           <SubtitleTextContainer>
             <SubtitleText
               $powerGlow={currentGlowLevel === 'power'}
