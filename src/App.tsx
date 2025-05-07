@@ -1,4 +1,4 @@
-// App.tsx - With true infinite loop carousel
+// App.tsx - Modified for vertical carousel
 import React, { useState, useEffect, useRef } from 'react';
 import IntroAnimation from './components/animations/IntroAnimation';
 import FadeTransition, { ContentRevealer } from './components/animations/FadeTransition';
@@ -31,7 +31,7 @@ const FixedHeaderContainer = styled.div`
   -webkit-backdrop-filter: blur(8px);
 `;
 
-// Content container modified for horizontal layout
+// Content container modified for vertical layout
 const MainContentContainer = styled.div`
   position: relative; 
   width: 100%;
@@ -41,20 +41,20 @@ const MainContentContainer = styled.div`
   overflow: hidden; /* Hide overflow */
 `;
 
-// Horizontal scroll container - modified for true infinite loop
-const HorizontalScrollContainer = styled.div<{ $noTransition?: boolean }>`
+// Vertical scroll container - modified for true infinite loop
+const VerticalScrollContainer = styled.div<{ $noTransition?: boolean }>`
   display: flex;
-  flex-direction: row;
-  width: 700%; /* Increased from 500% for loop buffer */
-  height: 100vh;
+  flex-direction: column;
+  height: 700%; /* Increased from 500% for loop buffer */
+  width: 100vw;
   transition: ${props => props.$noTransition 
     ? 'none' 
     : 'transform 1.2s cubic-bezier(0.645, 0.045, 0.355, 1.000)'};
   will-change: transform; /* Performance optimization */
-  touch-action: pan-y; /* Allow vertical scrolling on touch devices */
+  touch-action: pan-x; /* Allow horizontal scrolling on touch devices */
 `;
 
-// Section wrapper for horizontal layout
+// Section wrapper for vertical layout
 const SectionWrapper = styled.div<{ $isClone?: boolean }>`
   width: 100vw;
   height: 100vh;
@@ -63,10 +63,10 @@ const SectionWrapper = styled.div<{ $isClone?: boolean }>`
   opacity: ${props => props.$isClone ? 0.99 : 1}; /* Almost imperceptible difference for clones */
 `;
 
-// Navigation dots
+// Navigation dots - moved to the left side
 const NavDots = styled.div`
   position: fixed;
-  right: 20px;
+  left: 20px;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
@@ -96,18 +96,19 @@ const NavDot = styled.div<{ $active: boolean; $darkMode: boolean }>`
   }
 `;
 
-// Directional arrows
+// Directional arrows - moved to right side (where dots were previously)
 const NavigationArrows = styled.div`
   position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
-  gap: 30px;
+  flex-direction: column;
+  gap: 15px;
   z-index: 900;
 `;
 
-const Arrow = styled.button<{ $darkMode: boolean; $direction: 'left' | 'right' }>`
+const Arrow = styled.button<{ $darkMode: boolean; $direction: 'up' | 'down' }>`
   width: 50px;
   height: 50px;
   background-color: ${props => props.$darkMode 
@@ -124,7 +125,7 @@ const Arrow = styled.button<{ $darkMode: boolean; $direction: 'left' | 'right' }
   
   &:hover {
     background-color: rgba(132,227,215, 0.2);
-    transform: translateY(-3px);
+    transform: translateX(-3px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
   }
   
@@ -136,7 +137,7 @@ const Arrow = styled.button<{ $darkMode: boolean; $direction: 'left' | 'right' }
     stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
-    transform: ${props => props.$direction === 'left' ? 'rotate(180deg)' : 'none'};
+    transform: ${props => props.$direction === 'up' ? 'rotate(270deg)' : 'rotate(90deg)'};
   }
 `;
 
@@ -295,10 +296,10 @@ const App: React.FC = () => {
     if (isTransitioning || Math.abs(e.deltaY) < 10) return;
     
     if (e.deltaY > 30) {
-      // Scrolling down/right - go to next section
+      // Scrolling down - go to next section
       handleNavigation(currentSectionIndex + 1);
     } else if (e.deltaY < -30) {
-      // Scrolling up/left - go to previous section
+      // Scrolling up - go to previous section
       handleNavigation(currentSectionIndex - 1);
     }
   };
@@ -319,15 +320,15 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!mainContentVisible) return;
     
-    const container = document.getElementById('horizontal-scroll-container');
+    const container = document.getElementById('vertical-scroll-container');
     if (!container) return;
     
     const handleTouchStart = (e: TouchEvent) => {
-      touchStartRef.current = e.touches[0].clientX;
+      touchStartRef.current = e.touches[0].clientY; // Changed from clientX to clientY for vertical
     };
     
     const handleTouchMove = (e: TouchEvent) => {
-      touchMoveRef.current = e.touches[0].clientX;
+      touchMoveRef.current = e.touches[0].clientY; // Changed from clientX to clientY for vertical
     };
     
     const handleTouchEnd = () => {
@@ -339,10 +340,10 @@ const App: React.FC = () => {
       if (Math.abs(diff) < 60 || isTransitioning) return;
       
       if (diff > 0) {
-        // Swipe left - go to next section
+        // Swipe up - go to next section
         handleNavigation(currentSectionIndex + 1);
       } else if (diff < 0) {
-        // Swipe right - go to previous section
+        // Swipe down - go to previous section
         handleNavigation(currentSectionIndex - 1);
       }
     };
@@ -366,10 +367,10 @@ const App: React.FC = () => {
       if (isTransitioning) return;
       
       switch (e.key) {
-        case 'ArrowRight':
+        case 'ArrowDown':
           handleNavigation(currentSectionIndex + 1);
           break;
-        case 'ArrowLeft':
+        case 'ArrowUp':
           handleNavigation(currentSectionIndex - 1);
           break;
         case 'Home':
@@ -480,12 +481,12 @@ const App: React.FC = () => {
               </ContentRevealer>
             </FixedHeaderContainer>
             
-            {/* Main content with horizontal scrolling */}
+            {/* Main content with vertical scrolling */}
             <MainContentContainer>
               <ContentRevealer visible={mainContentVisible} delay={0.2}>
-                <HorizontalScrollContainer 
-                  id="horizontal-scroll-container"
-                  style={{ transform: `translateX(-${currentSectionIndex * (100/7)}%)` }}
+                <VerticalScrollContainer 
+                  id="vertical-scroll-container"
+                  style={{ transform: `translateY(-${currentSectionIndex * (100/7)}%)` }}
                   $noTransition={noTransition}
                 >
                   {sections.map((section, index) => (
@@ -500,9 +501,9 @@ const App: React.FC = () => {
                       />
                     </SectionWrapper>
                   ))}
-                </HorizontalScrollContainer>
+                </VerticalScrollContainer>
                 
-                {/* Navigation dots - showing only real sections */}
+                {/* Navigation dots - moved to left side */}
                 <NavDots>
                   {realSections.map((section, index) => {
                     // Calculate if this dot should be active based on the current extended index
@@ -522,11 +523,11 @@ const App: React.FC = () => {
                   })}
                 </NavDots>
                 
-                {/* Navigation arrows */}
+                {/* Navigation arrows - now for up/down navigation */}
                 <NavigationArrows>
                   <Arrow 
                     $darkMode={darkMode} 
-                    $direction="left"
+                    $direction="up"
                     onClick={navigatePrev}
                     aria-label="Previous section"
                   >
@@ -536,7 +537,7 @@ const App: React.FC = () => {
                   </Arrow>
                   <Arrow 
                     $darkMode={darkMode} 
-                    $direction="right"
+                    $direction="down"
                     onClick={navigateNext}
                     aria-label="Next section"
                   >
