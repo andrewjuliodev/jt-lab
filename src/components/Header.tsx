@@ -1,7 +1,8 @@
-// src/components/Header.tsx - With section change handler
+// src/components/Header.tsx
 import React from 'react';
-import styled, { keyframes, css } from 'styled-components';
+import styled from 'styled-components';
 import Navbar from './Navbar';
+import ScrambleLogo from './ScrambleLogo'; // Import our new ScrambleLogo component
 
 // Constants
 const COLORS = {
@@ -20,36 +21,6 @@ const COLORS = {
   WHITE: '#fff',
   BLACK: '#000'
 };
-
-// Animation keyframes
-const continuousGlowBurst = keyframes`
-  0% {
-    text-shadow:
-      0 0 4px ${COLORS.GLOW_LIGHTEST},
-      0 0 7px ${COLORS.GLOW_FAINT};
-  }
-  50% {
-    text-shadow:
-      0 0 8px ${COLORS.GLOW_MEDIUM},
-      0 0 12px ${COLORS.GLOW_LIGHTER},
-      0 0 16px ${COLORS.GLOW_LIGHTEST};
-  }
-  100% {
-    text-shadow:
-      0 0 4px ${COLORS.GLOW_LIGHTEST},
-      0 0 7px ${COLORS.GLOW_FAINT};
-  }
-`;
-
-// Types - added onSectionChange prop
-interface HeaderProps {
-  darkMode: boolean;
-  onToggleTheme: () => void;
-  visible: boolean;
-  activeSection?: string;
-  onLogoClick?: () => void;
-  onSectionChange?: (sectionId: string) => void; // New prop for section change
-}
 
 // Styled Components
 const HeaderContainer = styled.div<{ $darkMode?: boolean; $visible: boolean }>`
@@ -88,32 +59,6 @@ const HeaderRight = styled.div`
   display: flex;
   align-items: center;
   justify-content: flex-end;
-`;
-
-const Logo = styled.div<{ $darkMode: boolean }>`
-  font-family: "Cal Sans", sans-serif;
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: ${props => props.$darkMode ? COLORS.WHITE : COLORS.BLACK};
-  cursor: pointer;
-  animation: ${css`${continuousGlowBurst} 3s ease-in-out infinite`};
-  transition: transform 0.3s ease;
-  
-  @media (max-width: 768px) {
-    font-size: 1.5rem;
-  }
-  
-  &:hover {
-    text-shadow: 
-      0 0 5px rgb(58, 186, 170),
-      0 0 10px rgb(58, 186, 170),
-      0 0 15px rgb(58, 186, 170);
-    transform: scale(1.05);
-  }
-  
-  &:active {
-    transform: scale(0.95);
-  }
 `;
 
 const ThemeToggle = styled.button<{ $darkMode?: boolean }>`
@@ -172,8 +117,18 @@ const NavbarWrapper = styled.div`
   }
 `;
 
+// Types - added onSectionChange prop
+interface HeaderProps {
+  darkMode: boolean;
+  onToggleTheme: () => void;
+  visible: boolean;
+  activeSection?: string;
+  onLogoClick?: () => void;
+  onSectionChange?: (sectionId: string) => void; // New prop for section change
+}
+
 /**
- * Header component with section change handler
+ * Header component with scrambling logo effect
  */
 const Header: React.FC<HeaderProps> = ({ 
   darkMode, 
@@ -205,17 +160,12 @@ const Header: React.FC<HeaderProps> = ({
 
   return (
     <HeaderContainer $darkMode={darkMode} $visible={visible}>
-      {/* Left side: Logo */}
+      {/* Left side: Logo with scramble effect */}
       <HeaderLeft>
-        <Logo 
-          $darkMode={darkMode}
+        <ScrambleLogo 
+          darkMode={darkMode}
           onClick={handleLogoClick}
-          role="button"
-          aria-label="Go to home section"
-          tabIndex={0}
-        >
-          JT Lab
-        </Logo>
+        />
       </HeaderLeft>
       
       {/* Center: Navbar */}
