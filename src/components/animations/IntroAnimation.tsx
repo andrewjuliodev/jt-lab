@@ -240,18 +240,16 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
 }) => {
   // Constants
   const name = "JulioTompsett's";
-  // Updated animation timings:
-  // Added 500ms delay to retraction and scrambling
-  // Reduced JT Lab glow duration to 1800ms
+  // Updated animation timings for faster flow:
   const ANIMATION_TIMINGS = {
-    INITIAL_ELEMENTS: 1000,   // Elements appear at 1000ms (1.0s)
-    SUBTITLE_TEXT: 1100,      // Subtitle text appears at 1100ms (1.1s)
-    START_RETRACTION: 3250,   // Letters start retracting at 3250ms (added 500ms)
-    START_SCRAMBLING: 3750,   // Text scrambling starts at 3750ms (added 500ms)
-    HIDE_RETRACTED_JT: 4400,  // Retracted text disappears at 4400ms (adjusted for new timing)
-    POWER_GLOW_BURST: 4250,   // Power glow burst timing unchanged
-    FINAL_GLOW: 4500,         // Final glow transition timing unchanged
-    ANIMATION_COMPLETE: 2800  // Animation completes sooner (reduced from 4000ms to 2800ms)
+    INITIAL_ELEMENTS: 700,    // Elements appear at 700ms (reduced from 1000ms)
+    SUBTITLE_TEXT: 800,       // Subtitle text appears at 800ms (reduced from 1100ms)
+    START_RETRACTION: 2000,   // Letters start retracting at 2000ms (reduced from 3250ms)
+    START_SCRAMBLING: 2200,   // Text scrambling starts at 2200ms (reduced from 3750ms)
+    HIDE_RETRACTED_JT: 2500,  // Retracted text disappears at 2500ms (adjusted for new timing)
+    POWER_GLOW_BURST: 2700,   // Power glow burst at 2700ms (adjusted)
+    FINAL_GLOW: 3000,         // Final glow transition timing
+    ANIMATION_COMPLETE: 2100  // Animation completes sooner
   };
 
   // State management - organized by functionality
@@ -300,23 +298,23 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
       console.log("[Animation] Applying power glow after delay at:", Date.now());
       setCurrentGlowLevel('power');
       
-      // Stop the glow effect 300ms before the exit transition
+      // Stop the glow effect before the exit transition
       setTimeout(() => {
         console.log("[Animation] Stopping glow effect before exit:", Date.now());
         setCurrentGlowLevel(undefined); // Remove glow effect
         
-        // Wait 300ms and then start the exit animation
+        // Wait and then start the exit animation
         setTimeout(() => {
           // Start the exit animation for all elements simultaneously
           setSwishExit(true);
           setImageExit(true);
           
           // Delay the completion callback until after the exit animation
-          setTimeout(onComplete, 900);
-        }, 300); // 300ms pause with no glow before exit
+          setTimeout(onComplete, 700); // Reduced from 900ms for faster exit
+        }, 200); // Reduced from 300ms for faster response
         
-      }, 1500); // Reduced from 1800ms to 1500ms to account for the 300ms no-glow period
-    }, 200);
+      }, 1000); // Reduced from 1500ms for shorter glow duration
+    }, 100); // Reduced from 200ms for faster response
   };
 
   // Effect for screen resize
@@ -577,7 +575,7 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
             <ScrambleText 
               startText="Web Dev."
               endText="JT Lab"
-              duration={1000}
+                                duration={800} // Reduced from 1000ms for faster scrambling
               color={darkMode ? COLORS.TEXT_LIGHT : COLORS.TEXT_DARK}
               fontSize={windowWidth <= 768 ? "8rem" : "12rem"}
               onComplete={handleScrambleComplete}
@@ -589,7 +587,7 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
             <ScrambleText 
               startText="Crafting Custom Websites: Business, E-commerce, Portfolios & More"
               endText="Landing Sites | SPA | PWA | Web | Mobile Optimized"
-              duration={1000}
+              duration={800} // Reduced from 1000ms for faster scrambling
               color={darkMode ? COLORS.TEXT_LIGHT : COLORS.TEXT_DARK}
               fontSize={windowWidth <= 768 ? "1.1rem" : "1.2rem"}
               style={{ 
