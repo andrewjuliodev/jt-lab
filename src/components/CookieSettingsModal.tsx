@@ -54,16 +54,21 @@ const ModalContainer = styled.div<{ $darkMode: boolean }>`
   width: 90%;
   max-width: 600px;
   max-height: 90vh;
-  overflow: hidden; /* Changed from overflow-y: auto to prevent body scrolling */
+  display: flex;
+  flex-direction: column;
   background-color: ${props => props.$darkMode ? 'rgb(30, 31, 31)' : '#fff'};
   color: ${props => props.$darkMode ? COLORS.LIGHT_TEXT : COLORS.DARK_TEXT};
   border-radius: 10px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  padding: 0; /* Removed padding from container to better control internal scroll */
   position: relative;
   border: 1px solid ${props => props.$darkMode 
     ? 'rgba(132, 227, 215, 0.3)' 
     : 'rgba(132, 227, 215, 0.4)'};
+  
+  /* Handle click and wheel events to prevent propagation to body */
+  &, & * {
+    overscroll-behavior: contain;
+  }
   
   @media (max-width: 768px) {
     width: 95%;
@@ -82,7 +87,9 @@ const ModalHeader = styled.div<{ $darkMode: boolean }>`
   position: sticky;
   top: 0;
   background-color: ${props => props.$darkMode ? 'rgb(30, 31, 31)' : '#fff'};
-  z-index: 1;
+  z-index: 10;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
 `;
 
 const ModalTitle = styled.h2`
@@ -112,13 +119,33 @@ const CloseButton = styled.button<{ $darkMode: boolean }>`
 
 const ModalBody = styled.div`
   padding: 0 2rem;
-  margin-bottom: 0;
-  overflow-y: auto; /* This is the scrollable container */
-  max-height: calc(90vh - 150px); /* Adjust based on header and footer height */
+  flex: 1;
+  overflow-y: auto; /* Make this scrollable */
+  max-height: calc(80vh - 120px); /* Ensure content is scrollable with fixed height */
+  overscroll-behavior: contain; /* Prevent scroll chaining to parent */
   
   @media (max-width: 768px) {
     padding: 0 1.5rem;
-    max-height: calc(90vh - 180px);
+    max-height: calc(80vh - 140px);
+  }
+  
+  /* Ensure scrollbar is visible and interactive */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(132, 227, 215, 0.6);
+    border-radius: 10px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(132, 227, 215, 0.8);
   }
 `;
 
@@ -132,7 +159,7 @@ const CookieTypes = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  padding-bottom: 1rem;
+  padding-bottom: 2rem; /* Increased padding to ensure visibility of all content */
 `;
 
 const CookieTypeItem = styled.div<{ $darkMode: boolean }>`
@@ -242,6 +269,7 @@ const DetailValue = styled.span`
 const ModalFooter = styled.div<{ $darkMode: boolean }>`
   display: flex;
   justify-content: space-between;
+  align-items: center;
   border-top: 1px solid ${props => props.$darkMode 
     ? 'rgba(255, 255, 255, 0.1)' 
     : 'rgba(0, 0, 0, 0.1)'};
@@ -249,7 +277,9 @@ const ModalFooter = styled.div<{ $darkMode: boolean }>`
   position: sticky;
   bottom: 0;
   background-color: ${props => props.$darkMode ? 'rgb(30, 31, 31)' : '#fff'};
-  z-index: 1;
+  z-index: 10;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
   
   @media (max-width: 576px) {
     flex-direction: column;
@@ -260,7 +290,7 @@ const ModalFooter = styled.div<{ $darkMode: boolean }>`
 
 const ButtonGroup = styled.div`
   display: flex;
-  gap: 1.5rem;
+  gap: 1.5rem; /* Consistent gap size for group buttons */
   
   @media (max-width: 576px) {
     flex-direction: column;
@@ -316,6 +346,7 @@ const CookieSettingsModal: React.FC<CookieSettingsModalProps> = ({
 
   // Use ref to capture modal overlay element
   const overlayRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
   
   // Load existing consent on open
   useEffect(() => {
@@ -335,7 +366,17 @@ const CookieSettingsModal: React.FC<CookieSettingsModalProps> = ({
           console.error('Error parsing saved cookie consent', e);
         }
       }
+      
+      // Prevent body scrolling when modal is open
+      if (isOpen) {
+        document.body.style.overflow = 'hidden';
+      }
     }
+    
+    // Cleanup: re-enable body scrolling when modal closes
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [isOpen]);
   
   // Log when modal opens
@@ -352,6 +393,18 @@ const CookieSettingsModal: React.FC<CookieSettingsModalProps> = ({
       onClose();
     }
   };
+  
+  // Handle Escape key to close modal
+  useEffect(() => {
+    const handleEscKey = (e: KeyboardEvent) => {
+      if (isOpen && e.key === 'Escape') {
+        onClose();
+      }
+    };
+    
+    window.addEventListener('keydown', handleEscKey);
+    return () => window.removeEventListener('keydown', handleEscKey);
+  }, [isOpen, onClose]);
   
   // Handle toggle change for cookie categories
   const handleToggle = (category: keyof CookieSettings) => {
@@ -394,15 +447,24 @@ const CookieSettingsModal: React.FC<CookieSettingsModalProps> = ({
     onSave(allRejected);
   };
   
+  // Prevent wheel event propagation to background
+  const handleWheel = (e: React.WheelEvent) => {
+    e.stopPropagation();
+  };
+  
   return (
     <ModalOverlay 
       $isOpen={isOpen} 
       ref={overlayRef}
       onClick={handleOverlayClick}
+      aria-modal="true"
+      role="dialog"
     >
       <ModalContainer 
         $darkMode={darkMode}
+        ref={modalRef}
         onClick={(e) => e.stopPropagation()} // Prevent closing when clicking modal content
+        onWheel={handleWheel} // Prevent wheel events from propagating
       >
         <ModalHeader $darkMode={darkMode}>
           <ModalTitle>Cookie Settings</ModalTitle>
@@ -546,7 +608,7 @@ const CookieSettingsModal: React.FC<CookieSettingsModalProps> = ({
         </ModalBody>
         
         <ModalFooter $darkMode={darkMode}>
-          <Button $darkMode={darkMode} onClick={handleRejectAll}>
+          <Button $darkMode={darkMode} onClick={handleRejectAll} style={{ marginRight: '1.5rem' }}>
             Reject All
           </Button>
           

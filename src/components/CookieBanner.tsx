@@ -284,6 +284,30 @@ const CookieBanner: React.FC<CookieBannerProps> = ({ darkMode, visible }) => {
     setSettingsIconVisible(true);
   };
   
+  // Handle cookie policy link click
+  const handleCookiePolicyClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault(); // Prevent default behavior
+    
+    // Navigate to datenschutz page by triggering a click on the data protection button in the about section
+    const aboutSection = document.getElementById('about');
+    if (aboutSection) {
+      aboutSection.scrollIntoView({ behavior: 'smooth' });
+      
+      // Small delay to ensure the section is loaded
+      setTimeout(() => {
+        // Find all buttons in the about section
+        const buttons = aboutSection.querySelectorAll('button');
+        
+        // Find the data protection button
+        buttons.forEach(button => {
+          if (button.textContent === 'Data Protection') {
+            button.click();
+          }
+        });
+      }, 500);
+    }
+  };
+  
   return (
     <>
       {/* Main banner */}
@@ -292,7 +316,11 @@ const CookieBanner: React.FC<CookieBannerProps> = ({ darkMode, visible }) => {
           <InfoText>
             We use cookies to improve your browsing experience. Some cookies are necessary for the website to function while others help us understand how you interact with our site.
             {' '}
-            <a href="/datenschutz" style={{ color: COLORS.GLOW, textDecoration: 'underline' }}>
+            <a 
+              href="#datenschutz" 
+              style={{ color: COLORS.GLOW, textDecoration: 'underline' }}
+              onClick={handleCookiePolicyClick}
+            >
               Cookie Policy
             </a>
           </InfoText>
