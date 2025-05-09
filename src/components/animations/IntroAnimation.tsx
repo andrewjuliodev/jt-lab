@@ -1,4 +1,4 @@
-// src/components/animations/IntroAnimation.tsx - Updated subtitle styling
+// src/components/animations/IntroAnimation.tsx - Fixed with transient props
 import React, { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import styled, { keyframes, css } from 'styled-components';
@@ -93,17 +93,17 @@ const subtleGlowPulsate = keyframes`
   }
 `;
 
-// Styled components
-const Container = styled.div<{ darkMode?: boolean; lightTheme?: boolean }>`
+// Styled components with fixed props (using $ prefix)
+const Container = styled.div<{ $darkMode?: boolean; $lightTheme?: boolean }>`
   position: relative;
   width: 100vw;
   height: 100vh;
   background-color: ${props => {
-    if (props.darkMode) return 'rgb(30, 31, 31)';
-    if (props.lightTheme) return '#fff';
+    if (props.$darkMode) return 'rgb(30, 31, 31)';
+    if (props.$lightTheme) return '#fff';
     return '#fff';
   }};
-  color: ${props => props.darkMode ? '#fff' : '#000'};
+  color: ${props => props.$darkMode ? '#fff' : '#000'};
   overflow: hidden;
   transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
 `;
@@ -127,26 +127,26 @@ const ProfileImage = styled(motion.img)`
 `;
 
 const LogoWrapper = styled(motion.div)<{
-  blur?: string;
-  fontSize?: string;
+  $blur?: string;
+  $fontSize?: string;
 }>`
   position: absolute;
   display: inline-flex;
   font-family: "Cal Sans", sans-serif;
-  font-size: ${props => props.fontSize || "4.5rem"};
+  font-size: ${props => props.$fontSize || "4.5rem"};
   font-weight: bold;
   color: #000;
-  filter: ${({ blur }) => blur || "none"};
+  filter: ${({ $blur }) => $blur || "none"};
   z-index: 3;
   white-space: nowrap;
   transition: font-size 0.8s ease-in-out, color 0.5s ease-in-out;
   
   @media (max-width: 768px) {
-    font-size: ${props => props.fontSize === "2.2rem" ? "1.8rem" : "3.5rem"};
+    font-size: ${props => props.$fontSize === "2.2rem" ? "1.8rem" : "3.5rem"};
   }
   
   @media (max-width: 480px) {
-    font-size: ${props => props.fontSize === "2.2rem" ? "1.5rem" : "2.5rem"};
+    font-size: ${props => props.$fontSize === "2.2rem" ? "1.5rem" : "2.5rem"};
   }
 `;
 
@@ -450,7 +450,7 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
 
   // Render component
   return (
-    <Container darkMode={darkMode} lightTheme={lightTheme && !darkMode}>
+    <Container $darkMode={darkMode} $lightTheme={lightTheme && !darkMode}>
       {/* Profile image - with faster slide-in animation */}
       <ProfileImage 
         src="/ja_left.png" 
@@ -479,7 +479,7 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
       
       {/* JulioTompsett or retract */}
       <LogoWrapper
-        blur={blur}
+        $blur={blur}
         initial={{ opacity: 0 }}
         animate={{ 
           opacity: hideRetractedJT ? 0 : 1,

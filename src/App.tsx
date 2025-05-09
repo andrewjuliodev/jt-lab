@@ -1,4 +1,4 @@
-// App.tsx - Modified to include legal pages
+// App.tsx - Complete file with cookie banner integration
 import React, { useState, useEffect, useRef } from 'react';
 import IntroAnimation from './components/animations/IntroAnimation';
 import FadeTransition, { ContentRevealer } from './components/animations/FadeTransition';
@@ -11,6 +11,7 @@ import HomeSection from './components/sections/HomeSection';
 import ImpressumPage from './components/pages/ImpressumPage';
 import DatenschutzPage from './components/pages/DatenschutzPage';
 import DisclaimerPage from './components/pages/DisclaimerPage';
+import CookieBanner from './components/CookieBanner'; // Import the cookie banner
 import styled from 'styled-components';
 import GlobalStyle from './styles/GlobalStyle';
 
@@ -250,6 +251,9 @@ const App: React.FC = () => {
   useEffect(() => {
     document.body.classList.add('intro-active');
     
+    // Log when the app mounts
+    console.log("App component mounted");
+    
     // Cleanup function
     return () => {
       document.body.classList.remove('intro-active');
@@ -312,6 +316,7 @@ const App: React.FC = () => {
   // When main content becomes visible, update body class
   useEffect(() => {
     if (mainContentVisible) {
+      console.log("Main content became visible, updating body class");
       document.body.classList.remove('intro-active');
       document.body.classList.add('intro-complete');
       setCurrentSectionIndex(1); // Start with home section (index 1 in the extended array)
@@ -466,7 +471,6 @@ const App: React.FC = () => {
     setShowImpressum(false);
     setShowDatenschutz(false);
     setShowDisclaimer(false);
-    setShowDisclaimer(false);
     
     // Convert to extended array index
     const extendedIndex = getRealToExtendedIndex(realIndex);
@@ -557,6 +561,15 @@ const App: React.FC = () => {
     console.log("Theme set to:", newDarkMode ? "dark" : "light");
   };
 
+  // Add some debugging logs
+  useEffect(() => {
+    console.log("Current state:");
+    console.log("- introComplete:", introComplete);
+    console.log("- fadeTransitionActive:", fadeTransitionActive);
+    console.log("- mainContentVisible:", mainContentVisible);
+    console.log("- darkMode:", darkMode);
+  }, [introComplete, fadeTransitionActive, mainContentVisible, darkMode]);
+
   return (
     <>
       <GlobalStyle />
@@ -580,6 +593,7 @@ const App: React.FC = () => {
           duration={0.8}
           backgroundColor={darkMode ? "#1e1f1f" : "#ffffff"}
           onComplete={() => {
+            console.log("Fade transition complete, setting mainContentVisible to true");
             setMainContentVisible(true);
           }}
         />
@@ -587,6 +601,12 @@ const App: React.FC = () => {
         {/* Show header and content after animation completes */}
         {mainContentVisible && (
           <>
+            {/* Cookie Banner - Added before other components */}
+            <CookieBanner 
+              darkMode={darkMode} 
+              visible={mainContentVisible} 
+            />
+            
             {/* Fixed header at the top with Navbar */}
             <FixedHeaderContainer>
               <ContentRevealer visible={mainContentVisible} delay={0.1}>
