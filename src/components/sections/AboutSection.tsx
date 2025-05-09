@@ -140,10 +140,18 @@ interface AboutSectionProps {
   id: string;
   darkMode: boolean;
   hideHeader?: boolean;
+  onLegalNoticeClick?: () => void;
+  onDataProtectionClick?: () => void;
 }
 
 // About Section Component
-const AboutSection: React.FC<AboutSectionProps> = ({ id, darkMode, hideHeader }) => {
+const AboutSection: React.FC<AboutSectionProps> = ({ 
+  id, 
+  darkMode, 
+  hideHeader, 
+  onLegalNoticeClick, 
+  onDataProtectionClick 
+}) => {
   return (
     <ViewportSection 
       id={id} 
@@ -171,8 +179,24 @@ const AboutSection: React.FC<AboutSectionProps> = ({ id, darkMode, hideHeader })
       </ContentContainer>
       
       <ButtonContainer>
-        <Button $darkMode={darkMode} $primary>Download Resume</Button>
-        <Button $darkMode={darkMode}>Contact Me</Button>
+        <Button $darkMode={darkMode} onClick={() => {
+          const contactSection = document.getElementById('contact');
+          if (contactSection) {
+            contactSection.scrollIntoView({ behavior: 'smooth' });
+          }
+        }}>Contact Me</Button>
+        <Button 
+          $darkMode={darkMode} 
+          onClick={onLegalNoticeClick}
+        >
+          Legal Notice
+        </Button>
+        <Button 
+          $darkMode={darkMode} 
+          onClick={onDataProtectionClick}
+        >
+          Data Protection
+        </Button>
       </ButtonContainer>
     </ViewportSection>
   );

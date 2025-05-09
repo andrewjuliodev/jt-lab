@@ -1,4 +1,4 @@
-// App.tsx - Modified for vertical carousel
+// App.tsx - Modified to include legal pages
 import React, { useState, useEffect, useRef } from 'react';
 import IntroAnimation from './components/animations/IntroAnimation';
 import FadeTransition, { ContentRevealer } from './components/animations/FadeTransition';
@@ -8,10 +8,16 @@ import PortfolioSection from './components/sections/PortfolioSection';
 import ContactSection from './components/sections/ContactSection';
 import AboutSection from './components/sections/AboutSection';
 import HomeSection from './components/sections/HomeSection';
+import ImpressumPage from './components/pages/ImpressumPage';
+import DatenschutzPage from './components/pages/DatenschutzPage';
 import styled from 'styled-components';
 import GlobalStyle from './styles/GlobalStyle';
 
-const AppContainer = styled.div<{ $darkMode: boolean }>`
+interface AppContainerProps {
+  $darkMode: boolean;
+}
+
+const AppContainer = styled.div<AppContainerProps>`
   min-height: 100vh;
   background-color: ${props => props.$darkMode ? 'rgb(30, 31, 31)' : '#f0f0f0'};
   transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
@@ -41,8 +47,12 @@ const MainContentContainer = styled.div`
   overflow: hidden; /* Hide overflow */
 `;
 
+interface VerticalScrollContainerProps {
+  $noTransition?: boolean;
+}
+
 // Vertical scroll container - modified for true infinite loop
-const VerticalScrollContainer = styled.div<{ $noTransition?: boolean }>`
+const VerticalScrollContainer = styled.div<VerticalScrollContainerProps>`
   display: flex;
   flex-direction: column;
   height: 700%; /* Increased from 500% for loop buffer */
@@ -54,8 +64,12 @@ const VerticalScrollContainer = styled.div<{ $noTransition?: boolean }>`
   touch-action: pan-x; /* Allow horizontal scrolling on touch devices */
 `;
 
+interface SectionWrapperProps {
+  $isClone?: boolean;
+}
+
 // Section wrapper for vertical layout
-const SectionWrapper = styled.div<{ $isClone?: boolean }>`
+const SectionWrapper = styled.div<SectionWrapperProps>`
   width: 100vw;
   height: 100vh;
   flex-shrink: 0;
@@ -75,7 +89,12 @@ const NavDots = styled.div`
   z-index: 900;
 `;
 
-const NavDot = styled.div<{ $active: boolean; $darkMode: boolean }>`
+interface NavDotProps {
+  $active: boolean;
+  $darkMode: boolean;
+}
+
+const NavDot = styled.div<NavDotProps>`
   width: 12px;
   height: 12px;
   border-radius: 50%;
@@ -108,7 +127,12 @@ const NavigationArrows = styled.div`
   z-index: 900;
 `;
 
-const Arrow = styled.button<{ $darkMode: boolean; $direction: 'up' | 'down' }>`
+interface ArrowProps {
+  $darkMode: boolean;
+  $direction: 'up' | 'down';
+}
+
+const Arrow = styled.button<ArrowProps>`
   width: 50px;
   height: 50px;
   background-color: ${props => props.$darkMode 
@@ -141,6 +165,22 @@ const Arrow = styled.button<{ $darkMode: boolean; $direction: 'up' | 'down' }>`
   }
 `;
 
+interface LegalPageContainerProps {
+  $darkMode: boolean;
+}
+
+// Page container for legal pages
+const LegalPageContainer = styled.div<LegalPageContainerProps>`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2000;
+  overflow-y: auto;
+  background-color: ${props => props.$darkMode ? 'rgb(30, 31, 31)' : '#f0f0f0'};
+`;
+
 const App: React.FC = () => {
   // Animation sequence state
   const [introComplete, setIntroComplete] = useState(false);
@@ -155,6 +195,10 @@ const App: React.FC = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [noTransition, setNoTransition] = useState(false);
   const scrollCooldown = 1000;
+  
+  // Legal pages state
+  const [showImpressum, setShowImpressum] = useState(false);
+  const [showDatenschutz, setShowDatenschutz] = useState(false);
   
   // Define sections
   const realSections = [
@@ -213,6 +257,9 @@ const App: React.FC = () => {
 
   // Update active section based on currentSectionIndex
   useEffect(() => {
+    // Skip if a legal page is showing
+    if (showImpressum || showDatenschutz) return;
+    
     // Convert current index to real section index (account for clones)
     let realIndex = currentSectionIndex - 1; // Adjust for the first clone
     
@@ -258,7 +305,7 @@ const App: React.FC = () => {
       
       return () => clearTimeout(timer);
     }
-  }, [currentSectionIndex, isTransitioning, realSections, sections.length]);
+  }, [currentSectionIndex, isTransitioning, realSections, sections.length, showImpressum, showDatenschutz]);
 
   // When main content becomes visible, update body class
   useEffect(() => {
@@ -291,6 +338,9 @@ const App: React.FC = () => {
 
   // Smooth scrolling wheel event handler function
   const handleWheel = (e: WheelEvent) => {
+    // Skip if a legal page is showing
+    if (showImpressum || showDatenschutz) return;
+    
     e.preventDefault();
     
     if (isTransitioning || Math.abs(e.deltaY) < 10) return;
@@ -308,17 +358,23 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!mainContentVisible) return;
     
+    // Skip if a legal page is showing
+    if (showImpressum || showDatenschutz) return;
+    
     // Use passive: false to be able to prevent default
     window.addEventListener('wheel', handleWheel, { passive: false });
     
     return () => {
       window.removeEventListener('wheel', handleWheel);
     };
-  }, [mainContentVisible, currentSectionIndex, isTransitioning]);
+  }, [mainContentVisible, currentSectionIndex, isTransitioning, showImpressum, showDatenschutz]);
   
   // Handle touch events for mobile swipe
   useEffect(() => {
     if (!mainContentVisible) return;
+    
+    // Skip if a legal page is showing
+    if (showImpressum || showDatenschutz) return;
     
     const container = document.getElementById('vertical-scroll-container');
     if (!container) return;
@@ -357,11 +413,14 @@ const App: React.FC = () => {
       container.removeEventListener('touchmove', handleTouchMove);
       container.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [mainContentVisible, currentSectionIndex, isTransitioning]);
+  }, [mainContentVisible, currentSectionIndex, isTransitioning, showImpressum, showDatenschutz]);
 
   // Handle keyboard navigation
   useEffect(() => {
     if (!mainContentVisible) return;
+    
+    // Skip if a legal page is showing
+    if (showImpressum || showDatenschutz) return;
     
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isTransitioning) return;
@@ -381,6 +440,11 @@ const App: React.FC = () => {
           // Go to last real section (index sections.length - 2)
           handleNavigation(sections.length - 2);
           break;
+        case 'Escape':
+          // Close legal pages if open
+          if (showImpressum) setShowImpressum(false);
+          if (showDatenschutz) setShowDatenschutz(false);
+          break;
         default:
           break;
       }
@@ -391,10 +455,14 @@ const App: React.FC = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [mainContentVisible, currentSectionIndex, isTransitioning, sections.length]);
+  }, [mainContentVisible, currentSectionIndex, isTransitioning, sections.length, showImpressum, showDatenschutz]);
 
   // Navigate to specific section in the real sections array
   const navigateToRealSection = (realIndex: number) => {
+    // Close legal pages if open
+    setShowImpressum(false);
+    setShowDatenschutz(false);
+    
     // Convert to extended array index
     const extendedIndex = getRealToExtendedIndex(realIndex);
     handleNavigation(extendedIndex);
@@ -402,6 +470,21 @@ const App: React.FC = () => {
   
   // Navigate to specific section by ID
   const navigateToSectionById = (sectionId: string) => {
+    // Handle legal pages navigation
+    if (sectionId === 'impressum') {
+      setShowImpressum(true);
+      return;
+    }
+    
+    if (sectionId === 'datenschutz') {
+      setShowDatenschutz(true);
+      return;
+    }
+    
+    // Close legal pages if open
+    setShowImpressum(false);
+    setShowDatenschutz(false);
+    
     const realIndex = realSections.findIndex(section => section.id === sectionId);
     if (realIndex !== -1) {
       navigateToRealSection(realIndex);
@@ -410,6 +493,10 @@ const App: React.FC = () => {
 
   // Navigate to home section for logo click
   const navigateToHome = () => {
+    // Close legal pages if open
+    setShowImpressum(false);
+    setShowDatenschutz(false);
+    
     navigateToRealSection(0); // Home is the first real section (index 0)
   };
 
@@ -426,6 +513,22 @@ const App: React.FC = () => {
   // Handle navbar section change
   const handleSectionChange = (sectionId: string) => {
     navigateToSectionById(sectionId);
+  };
+
+  // Handle click on legal notice button
+  const handleLegalNoticeClick = () => {
+    setShowImpressum(true);
+  };
+
+  // Handle click on data protection button
+  const handleDataProtectionClick = () => {
+    setShowDatenschutz(true);
+  };
+
+  // Handle back button from legal pages
+  const handleBackFromLegalPage = () => {
+    setShowImpressum(false);
+    setShowDatenschutz(false);
   };
 
   // Direct toggle implementation for theme
@@ -497,57 +600,76 @@ const App: React.FC = () => {
                       <section.component 
                         id={section.id} 
                         darkMode={darkMode} 
-                        hideHeader={true} 
+                        hideHeader={true}
+                        onLegalNoticeClick={handleLegalNoticeClick}
+                        onDataProtectionClick={handleDataProtectionClick}
                       />
                     </SectionWrapper>
                   ))}
                 </VerticalScrollContainer>
                 
                 {/* Navigation dots - moved to left side */}
-                <NavDots>
-                  {realSections.map((section, index) => {
-                    // Calculate if this dot should be active based on the current extended index
-                    const isActive = index + 1 === currentSectionIndex || 
-                      (index === 0 && currentSectionIndex === sections.length - 1) ||
-                      (index === realSections.length - 1 && currentSectionIndex === 0);
-                      
-                    return (
-                      <NavDot 
-                        key={section.id}
-                        $active={isActive}
-                        $darkMode={darkMode}
-                        onClick={() => navigateToRealSection(index)}
-                        title={section.id.charAt(0).toUpperCase() + section.id.slice(1)}
-                      />
-                    );
-                  })}
-                </NavDots>
+                {!showImpressum && !showDatenschutz && (
+                  <NavDots>
+                    {realSections.map((section, index) => {
+                      // Calculate if this dot should be active based on the current extended index
+                      const isActive = index + 1 === currentSectionIndex || 
+                        (index === 0 && currentSectionIndex === sections.length - 1) ||
+                        (index === realSections.length - 1 && currentSectionIndex === 0);
+                        
+                      return (
+                        <NavDot 
+                          key={section.id}
+                          $active={isActive}
+                          $darkMode={darkMode}
+                          onClick={() => navigateToRealSection(index)}
+                          title={section.id.charAt(0).toUpperCase() + section.id.slice(1)}
+                        />
+                      );
+                    })}
+                  </NavDots>
+                )}
                 
                 {/* Navigation arrows - now for up/down navigation */}
-                <NavigationArrows>
-                  <Arrow 
-                    $darkMode={darkMode} 
-                    $direction="up"
-                    onClick={navigatePrev}
-                    aria-label="Previous section"
-                  >
-                    <svg viewBox="0 0 24 24">
-                      <path d="M9 18l6-6-6-6" />
-                    </svg>
-                  </Arrow>
-                  <Arrow 
-                    $darkMode={darkMode} 
-                    $direction="down"
-                    onClick={navigateNext}
-                    aria-label="Next section"
-                  >
-                    <svg viewBox="0 0 24 24">
-                      <path d="M9 18l6-6-6-6" />
-                    </svg>
-                  </Arrow>
-                </NavigationArrows>
+                {!showImpressum && !showDatenschutz && (
+                  <NavigationArrows>
+                    <Arrow 
+                      $darkMode={darkMode} 
+                      $direction="up"
+                      onClick={navigatePrev}
+                      aria-label="Previous section"
+                    >
+                      <svg viewBox="0 0 24 24">
+                        <path d="M9 18l6-6-6-6" />
+                      </svg>
+                    </Arrow>
+                    <Arrow 
+                      $darkMode={darkMode} 
+                      $direction="down"
+                      onClick={navigateNext}
+                      aria-label="Next section"
+                    >
+                      <svg viewBox="0 0 24 24">
+                        <path d="M9 18l6-6-6-6" />
+                      </svg>
+                    </Arrow>
+                  </NavigationArrows>
+                )}
               </ContentRevealer>
             </MainContentContainer>
+            
+            {/* Legal Pages */}
+            {showImpressum && (
+              <LegalPageContainer $darkMode={darkMode}>
+                <ImpressumPage darkMode={darkMode} onBack={handleBackFromLegalPage} />
+              </LegalPageContainer>
+            )}
+            
+            {showDatenschutz && (
+              <LegalPageContainer $darkMode={darkMode}>
+                <DatenschutzPage darkMode={darkMode} onBack={handleBackFromLegalPage} />
+              </LegalPageContainer>
+            )}
           </>
         )}
       </AppContainer>
