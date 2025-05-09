@@ -293,28 +293,29 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
     setMainJTLabText(true);
     setBlur("none");
     
-    // Set power glow immediately and keep it active until exit
+    // Set power glow immediately and keep it active for a brief moment
     setTimeout(() => {
       console.log("[Animation] Applying power glow after delay at:", Date.now());
       setCurrentGlowLevel('power');
       
-      // Stop the glow effect before the exit transition
+      // Stop the glow effect quickly
       setTimeout(() => {
         console.log("[Animation] Stopping glow effect before exit:", Date.now());
         setCurrentGlowLevel(undefined); // Remove glow effect
         
-        // Wait and then start the exit animation
+        // Start exit animation with minimal delay
         setTimeout(() => {
           // Start the exit animation for all elements simultaneously
           setSwishExit(true);
           setImageExit(true);
           
-          // Delay the completion callback until after the exit animation
-          setTimeout(onComplete, 700); // Reduced from 900ms for faster exit
-        }, 200); // Reduced from 300ms for faster response
+          // Call onComplete almost immediately for a quick transition
+          // Just enough delay for exit animation to be visible but not too slow
+          setTimeout(onComplete, 200);
+        }, 100);
         
-      }, 1000); // Reduced from 1500ms for shorter glow duration
-    }, 100); // Reduced from 200ms for faster response
+      }, 600); // Reduced duration for a faster experience
+    }, 100); // Minimal delay
   };
 
   // Effect for screen resize
@@ -463,18 +464,17 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
         }}
         animate={{ 
           opacity: imageExit ? 0 : (retreatImage ? 0 : (imageVisible ? 1 : 0)),
-          y: imageExit ? "-100vh" : (retreatImage ? "100vh" : (imageVisible ? 0 : "100vh")),
-          x: imageExit ? "100vw" : 0
+          y: imageExit ? 0 : (retreatImage ? "100vh" : (imageVisible ? 0 : "100vh")), // Keep in place for fade out
+          // Remove the x movement for exit
         }}
         transition={{ 
-          opacity: { duration: 0.5, ease: "easeInOut" }, // Faster opacity transition
+          opacity: { 
+            duration: imageExit ? 0.3 : 0.5, 
+            ease: "easeInOut" 
+          }, // Slightly longer fade out
           y: { 
-            duration: imageExit ? 0.8 : 0.8, // Faster slide-in (was 1.5s)
+            duration: imageExit ? 0 : 0.8, // No y movement on exit
             ease: "easeOut"
-          },
-          x: {
-            duration: imageExit ? 0.8 : 0,
-            ease: "easeIn"
           }
         }}
       />
@@ -575,7 +575,7 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
             <ScrambleText 
               startText="Web Dev."
               endText="JT Lab"
-                                duration={800} // Reduced from 1000ms for faster scrambling
+              duration={800} // Reduced from 1000ms for faster scrambling
               color={darkMode ? COLORS.TEXT_LIGHT : COLORS.TEXT_DARK}
               fontSize={windowWidth <= 768 ? "8rem" : "12rem"}
               onComplete={handleScrambleComplete}
@@ -614,11 +614,10 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
               initial={{ opacity: 0, x: 0 }}
               animate={{ 
                 opacity: swishExit ? 0 : 1,
-                x: swishExit ? "100vw" : 0, // Animate to right side of screen
+                x: 0, // No horizontal movement on exit
               }}
               transition={{ 
-                opacity: { duration: 0.8 },
-                x: { duration: 0.8, ease: "easeIn" } // Use easeIn for acceleration effect
+                opacity: { duration: 0.3 }, // Faster fade for quicker transition
               }}
               style={{
                 fontSize: windowWidth <= 768 ? "8rem" : "12rem",
@@ -636,11 +635,10 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({
               initial={{ opacity: 0, x: 0 }}
               animate={{ 
                 opacity: swishExit ? 0 : 1,
-                x: swishExit ? "100vw" : 0, // Also swish the subtitle text
+                x: 0, // No horizontal movement on exit
               }}
               transition={{ 
-                opacity: { duration: 0.8 },
-                x: { duration: 0.8, ease: "easeIn", delay: 0.05 } // Slight delay for staggered effect
+                opacity: { duration: 0.3 }
               }}
               style={{
                 fontSize: windowWidth <= 768 ? "1.1rem" : "1.3rem",

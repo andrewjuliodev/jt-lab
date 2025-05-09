@@ -1,4 +1,4 @@
-// src/components/animations/FadeTransition.tsx - Fixed version
+// src/components/animations/FadeTransition.tsx - Fixed version with faster transition
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styled from 'styled-components';
@@ -29,7 +29,7 @@ const ContentContainer = styled(motion.div)`
 const FadeTransition: React.FC<FadeTransitionProps> = ({ 
   show, 
   backgroundColor = "#ffffff", 
-  duration = 0.8,
+  duration = 0.4, // Default to faster 0.4s duration
   onComplete 
 }) => {
   const [isAnimating, setIsAnimating] = useState(show);
@@ -73,7 +73,7 @@ export const ContentRevealer: React.FC<{
   visible: boolean;
   children: React.ReactNode;
   delay?: number;
-}> = ({ visible, children, delay = 0.3 }) => {
+}> = ({ visible, children, delay = 0.05 }) => { // Minimal delay
   return (
     <ContentContainer
       initial={{ opacity: 0, y: 30 }}
@@ -82,8 +82,8 @@ export const ContentRevealer: React.FC<{
         y: visible ? 0 : 30 
       }}
       transition={{
-        opacity: { duration: 0.8, delay: delay, ease: "easeOut" },
-        y: { duration: 1, delay: delay, ease: [0.16, 1, 0.3, 1] }
+        opacity: { duration: 0.25, delay: delay, ease: "easeOut" }, // Faster fade in
+        y: { duration: 0.3, delay: delay, ease: [0.16, 1, 0.3, 1] } // Faster movement
       }}
     >
       {children}
