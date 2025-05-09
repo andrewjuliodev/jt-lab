@@ -1,4 +1,4 @@
-// src/components/CookieBanner.tsx
+// src/components/CookieBanner.tsx - Complete file with 50px PNG cookie icon
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import CookieSettingsModal from './CookieSettingsModal';
@@ -143,51 +143,24 @@ const SettingsIcon = styled.div<{ $darkMode: boolean; $visible: boolean }>`
   position: fixed;
   bottom: 20px;
   right: 20px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: ${props => props.$darkMode 
-    ? 'rgba(30, 31, 31, 0.8)' 
-    : 'rgba(255, 255, 255, 0.8)'};
   display: ${props => props.$visible ? 'flex' : 'none'};
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 2000; /* Increased z-index to ensure visibility */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  border: 1px solid ${props => props.$darkMode 
-    ? 'rgba(132, 227, 215, 0.3)' 
-    : 'rgba(132, 227, 215, 0.4)'};
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
   transition: all 0.3s ease;
   
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(132, 227, 215, 0.4);
+    transform: translateY(-2px) rotate(5deg);
+    filter: drop-shadow(0 6px 12px rgba(132, 227, 215, 0.4));
   }
   
-  svg {
-    width: 20px;
-    height: 20px;
-    fill: ${props => props.$darkMode ? COLORS.LIGHT_TEXT : COLORS.DARK_TEXT};
+  img {
+    width: 35px;
+    height: 35px;
   }
 `;
-
-// Cookie icon for the settings button
-const CookieIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M21.598 11.064a1.006 1.006 0 0 0-.854-.172A2.938 2.938 0
-     0 1 18 8a2.988 2.988 0 0 1 .172-1.016 1 1 0 0 0-1.164-1.35A2.988 2.988 0
-     0 1 14 6a2.988 2.988 0 0 1-2.816-2 1 1 0 0 0-1.752-.284 2.987 2.987 0
-     0 1-2.586.979 1 1 0 0 0-1.132.791A2.989 2.989 0 0 1 4 8a2.988 2.988 0
-     0 1-1.879 2.766 1 1 0 0 0-.24 1.681 2.98 2.98 0 0 1 .84 2.466 1 1 0
-     0 0 1.277.957A2.989 2.989 0 0 1 8 14a2.988 2.988 0 0 1 2.816 2 1.1 1.1 0
-     0 0 .876.662c.08.012.163.018.246.018a1 1 0 0 0 .5-.121 2.989 2.989 0
-     0 1 2.573-.935 1 1 0 0 0 1.136-.7A2.986 2.986 0 0 1 18 14a2.986 2.986 0
-     0 1 2.786 1.945 1 1 0 0 0 1.775.114 2.978 2.978 0 0 1 .744-1.559 1 1 0
-     0 0-.707-3.436zM8.5 10a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3.5 3.5a1.5 1.5 0
-     1 1-3 0 1.5 1.5 0 0 1 3 0zm5-1.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
-  </svg>
-);
 
 // Main Cookie Banner Component
 const CookieBanner: React.FC<CookieBannerProps> = ({ darkMode, visible }) => {
@@ -347,7 +320,7 @@ const CookieBanner: React.FC<CookieBannerProps> = ({ darkMode, visible }) => {
         aria-label="Cookie Settings"
         title="Cookie Settings"
       >
-        <CookieIcon />
+        <img src="/cookie.png" alt="Cookie Settings" />
       </SettingsIcon>
       
       {/* Cookie Settings Modal */}
