@@ -47,7 +47,7 @@ const BannerContainer = styled.div<{ $visible: boolean; $darkMode: boolean }>`
   border-top: 1px solid ${props => props.$darkMode 
     ? 'rgba(132, 227, 215, 0.15)' 
     : 'rgba(132, 227, 215, 0.2)'};
-  max-height: 96px; /* Reduced by 20% from 120px */
+  max-height: 100px; /* Slightly increased from 96px to accommodate better spacing */
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -67,21 +67,23 @@ const ContentContainer = styled.div`
   flex-direction: row;
   align-items: center;
   gap: 1.5rem;
+  padding-right: 1rem; /* Add some padding on the right side of the text container */
   
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: flex-start;
     width: 100%;
     gap: 0.8rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.5rem; /* Reduced bottom margin since we added top margin to buttons */
+    padding-right: 0; /* Remove padding on mobile */
   }
 `;
 
 const InfoText = styled.p`
-  font-size: 0.92rem; /* Slightly reduced for better fit in smaller banner */
+  font-size: 0.88rem; /* Slightly reduced for better fit with longer text */
   margin: 0;
   flex: 1;
-  line-height: 1.4;
+  line-height: 1.45;
   
   @media (max-width: 768px) {
     width: 100%;
@@ -92,10 +94,13 @@ const InfoText = styled.p`
 const ButtonsContainer = styled.div`
   display: flex;
   gap: 1.5rem;
+  margin-left: 2rem; /* Added margin to create space between text and buttons */
   
   @media (max-width: 768px) {
     width: 100%;
     justify-content: space-between;
+    margin-left: 0; /* Remove margin on mobile as it switches to column layout */
+    margin-top: 1.2rem; /* Add top margin for mobile to create space after text */
   }
 `;
 
@@ -310,8 +315,7 @@ const CookieBanner: React.FC<CookieBannerProps> = ({ darkMode, visible }) => {
       <BannerContainer $visible={bannerVisible} $darkMode={darkMode}>
         <ContentContainer>
           <InfoText>
-            We use cookies to improve your browsing experience. Some cookies are necessary for the website to function while others help us understand how you interact with our site.
-            {' '}
+            We use cookies to enhance your browsing experience on our website. Some cookies are essential for the website's core functionality, while others help us analyze site usage, personalize content, and optimize your experience. By clicking "Accept All", you consent to the use of all cookies. You can customize your preferences by clicking "Settings" or decline non-essential cookies by selecting "Reject All". For more information, please see our{' '}
             <a 
               href="#datenschutz" 
               style={{ color: COLORS.GLOW, textDecoration: 'underline' }}
