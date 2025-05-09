@@ -10,6 +10,7 @@ import AboutSection from './components/sections/AboutSection';
 import HomeSection from './components/sections/HomeSection';
 import ImpressumPage from './components/pages/ImpressumPage';
 import DatenschutzPage from './components/pages/DatenschutzPage';
+import DisclaimerPage from './components/pages/DisclaimerPage';
 import styled from 'styled-components';
 import GlobalStyle from './styles/GlobalStyle';
 
@@ -199,6 +200,7 @@ const App: React.FC = () => {
   // Legal pages state
   const [showImpressum, setShowImpressum] = useState(false);
   const [showDatenschutz, setShowDatenschutz] = useState(false);
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
   
   // Define sections
   const realSections = [
@@ -258,7 +260,7 @@ const App: React.FC = () => {
   // Update active section based on currentSectionIndex
   useEffect(() => {
     // Skip if a legal page is showing
-    if (showImpressum || showDatenschutz) return;
+    if (showImpressum || showDatenschutz || showDisclaimer) return;
     
     // Convert current index to real section index (account for clones)
     let realIndex = currentSectionIndex - 1; // Adjust for the first clone
@@ -339,7 +341,7 @@ const App: React.FC = () => {
   // Smooth scrolling wheel event handler function
   const handleWheel = (e: WheelEvent) => {
     // Skip if a legal page is showing
-    if (showImpressum || showDatenschutz) return;
+    if (showImpressum || showDatenschutz || showDisclaimer) return;
     
     e.preventDefault();
     
@@ -359,7 +361,7 @@ const App: React.FC = () => {
     if (!mainContentVisible) return;
     
     // Skip if a legal page is showing
-    if (showImpressum || showDatenschutz) return;
+    if (showImpressum || showDatenschutz || showDisclaimer) return;
     
     // Use passive: false to be able to prevent default
     window.addEventListener('wheel', handleWheel, { passive: false });
@@ -374,7 +376,7 @@ const App: React.FC = () => {
     if (!mainContentVisible) return;
     
     // Skip if a legal page is showing
-    if (showImpressum || showDatenschutz) return;
+    if (showImpressum || showDatenschutz || showDisclaimer) return;
     
     const container = document.getElementById('vertical-scroll-container');
     if (!container) return;
@@ -420,7 +422,7 @@ const App: React.FC = () => {
     if (!mainContentVisible) return;
     
     // Skip if a legal page is showing
-    if (showImpressum || showDatenschutz) return;
+    if (showImpressum || showDatenschutz || showDisclaimer) return;
     
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isTransitioning) return;
@@ -444,6 +446,7 @@ const App: React.FC = () => {
           // Close legal pages if open
           if (showImpressum) setShowImpressum(false);
           if (showDatenschutz) setShowDatenschutz(false);
+          if (showDisclaimer) setShowDisclaimer(false);
           break;
         default:
           break;
@@ -455,13 +458,15 @@ const App: React.FC = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [mainContentVisible, currentSectionIndex, isTransitioning, sections.length, showImpressum, showDatenschutz]);
+  }, [mainContentVisible, currentSectionIndex, isTransitioning, sections.length, showImpressum, showDatenschutz, showDisclaimer]);
 
   // Navigate to specific section in the real sections array
   const navigateToRealSection = (realIndex: number) => {
     // Close legal pages if open
     setShowImpressum(false);
     setShowDatenschutz(false);
+    setShowDisclaimer(false);
+    setShowDisclaimer(false);
     
     // Convert to extended array index
     const extendedIndex = getRealToExtendedIndex(realIndex);
@@ -481,6 +486,11 @@ const App: React.FC = () => {
       return;
     }
     
+    if (sectionId === 'disclaimer') {
+      setShowDisclaimer(true);
+      return;
+    }
+    
     // Close legal pages if open
     setShowImpressum(false);
     setShowDatenschutz(false);
@@ -496,6 +506,7 @@ const App: React.FC = () => {
     // Close legal pages if open
     setShowImpressum(false);
     setShowDatenschutz(false);
+    setShowDisclaimer(false);
     
     navigateToRealSection(0); // Home is the first real section (index 0)
   };
@@ -525,10 +536,16 @@ const App: React.FC = () => {
     setShowDatenschutz(true);
   };
 
+  // Handle click on disclaimer button
+  const handleDisclaimerClick = () => {
+    setShowDisclaimer(true);
+  };
+
   // Handle back button from legal pages
   const handleBackFromLegalPage = () => {
     setShowImpressum(false);
     setShowDatenschutz(false);
+    setShowDisclaimer(false);
   };
 
   // Direct toggle implementation for theme
@@ -603,13 +620,14 @@ const App: React.FC = () => {
                         hideHeader={true}
                         onLegalNoticeClick={handleLegalNoticeClick}
                         onDataProtectionClick={handleDataProtectionClick}
+                        onDisclaimerClick={handleDisclaimerClick}
                       />
                     </SectionWrapper>
                   ))}
                 </VerticalScrollContainer>
                 
                 {/* Navigation dots - moved to left side */}
-                {!showImpressum && !showDatenschutz && (
+                {!showImpressum && !showDatenschutz && !showDisclaimer && (
                   <NavDots>
                     {realSections.map((section, index) => {
                       // Calculate if this dot should be active based on the current extended index
@@ -631,7 +649,7 @@ const App: React.FC = () => {
                 )}
                 
                 {/* Navigation arrows - now for up/down navigation */}
-                {!showImpressum && !showDatenschutz && (
+                {!showImpressum && !showDatenschutz && !showDisclaimer && (
                   <NavigationArrows>
                     <Arrow 
                       $darkMode={darkMode} 
@@ -668,6 +686,12 @@ const App: React.FC = () => {
             {showDatenschutz && (
               <LegalPageContainer $darkMode={darkMode}>
                 <DatenschutzPage darkMode={darkMode} onBack={handleBackFromLegalPage} />
+              </LegalPageContainer>
+            )}
+            
+            {showDisclaimer && (
+              <LegalPageContainer $darkMode={darkMode}>
+                <DisclaimerPage darkMode={darkMode} onBack={handleBackFromLegalPage} />
               </LegalPageContainer>
             )}
           </>

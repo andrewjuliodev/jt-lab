@@ -142,6 +142,7 @@ interface AboutSectionProps {
   hideHeader?: boolean;
   onLegalNoticeClick?: () => void;
   onDataProtectionClick?: () => void;
+  onDisclaimerClick?: () => void;
 }
 
 // About Section Component
@@ -150,7 +151,8 @@ const AboutSection: React.FC<AboutSectionProps> = ({
   darkMode, 
   hideHeader, 
   onLegalNoticeClick, 
-  onDataProtectionClick 
+  onDataProtectionClick,
+  onDisclaimerClick
 }) => {
   return (
     <ViewportSection 
@@ -196,6 +198,12 @@ const AboutSection: React.FC<AboutSectionProps> = ({
           onClick={onDataProtectionClick}
         >
           Data Protection
+        </Button>
+        <Button 
+          $darkMode={darkMode} 
+          onClick={onDisclaimerClick}
+        >
+          Disclaimer
         </Button>
       </ButtonContainer>
     </ViewportSection>
