@@ -33,7 +33,7 @@ const BannerContainer = styled.div<{ $visible: boolean; $darkMode: boolean }>`
   bottom: 0;
   left: 0;
   width: 100%;
-  padding: 1.5rem 10%;
+  padding: 1.2rem 10%; /* Reduced padding by 20% from 1.5rem */
   background-color: ${props => props.$darkMode 
     ? 'rgba(30, 31, 31, 0.95)' 
     : 'rgba(255, 255, 255, 0.95)'};
@@ -47,14 +47,14 @@ const BannerContainer = styled.div<{ $visible: boolean; $darkMode: boolean }>`
   border-top: 1px solid ${props => props.$darkMode 
     ? 'rgba(132, 227, 215, 0.15)' 
     : 'rgba(132, 227, 215, 0.2)'};
-  max-height: 120px; /* Increased height for better visibility */
+  max-height: 96px; /* Reduced by 20% from 120px */
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
   
   @media (max-width: 768px) {
-    padding: 1.5rem 5%;
+    padding: 1.2rem 5%; /* Reduced by 20% from 1.5rem */
     flex-direction: column;
     max-height: none;
     align-items: flex-start;
@@ -78,7 +78,7 @@ const ContentContainer = styled.div`
 `;
 
 const InfoText = styled.p`
-  font-size: 0.95rem;
+  font-size: 0.92rem; /* Slightly reduced for better fit in smaller banner */
   margin: 0;
   flex: 1;
   line-height: 1.4;
@@ -100,7 +100,7 @@ const ButtonsContainer = styled.div`
 `;
 
 const Button = styled.button<{ $darkMode: boolean; $primary?: boolean }>`
-  padding: 0.75rem 1.5rem;
+  padding: 0.6rem 1.2rem; /* Reduced by 20% from 0.75rem 1.5rem */
   border-radius: 4px;
   font-size: 0.95rem;
   font-weight: 500;
@@ -127,7 +127,7 @@ const Button = styled.button<{ $darkMode: boolean; $primary?: boolean }>`
   @media (max-width: 768px) {
     flex: 1;
     text-align: center;
-    padding: 0.75rem 0.5rem;
+    padding: 0.6rem 0.4rem; /* Reduced by 20% from 0.75rem 0.5rem */
     font-size: 0.9rem;
   }
 `;
@@ -170,8 +170,7 @@ const CookieBanner: React.FC<CookieBannerProps> = ({ darkMode, visible }) => {
   
   // Check for existing consent in localStorage on mount
   useEffect(() => {
-    console.log("CookieBanner component mounted");
-    console.log("visible prop:", visible);
+    console.log("CookieBanner component checking consent, visible prop:", visible);
     
     if (visible) {
       const hasConsent = localStorage.getItem('cookieConsent');
@@ -186,6 +185,30 @@ const CookieBanner: React.FC<CookieBannerProps> = ({ darkMode, visible }) => {
         setBannerVisible(false);
         setSettingsIconVisible(true);
       }
+    }
+  }, [visible]);
+  
+  // Handle visible prop changes after initial render
+  useEffect(() => {
+    // Only run this effect after initial render
+    const hasConsent = localStorage.getItem('cookieConsent');
+    
+    if (visible) {
+      console.log("Visible changed after initial check, updating cookie banner visibility");
+      
+      if (!hasConsent) {
+        console.log("No consent found, showing banner (after animation)");
+        setBannerVisible(true);
+        setSettingsIconVisible(false);
+      } else {
+        console.log("Consent exists, showing settings icon (after animation)");
+        setBannerVisible(false);
+        setSettingsIconVisible(true);
+      }
+    } else {
+      // If main content is not visible, hide everything
+      setBannerVisible(false);
+      setSettingsIconVisible(false);
     }
   }, [visible]);
   

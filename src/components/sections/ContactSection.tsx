@@ -284,6 +284,10 @@ interface ContactSectionProps {
   id: string;
   darkMode: boolean;
   hideHeader?: boolean;
+  onLegalNoticeClick?: () => void;
+  onDataProtectionClick?: () => void;
+  onDisclaimerClick?: () => void;
+  onSectionClick?: (sectionId: string) => void; // Added prop
 }
 
 // Contact Section Component

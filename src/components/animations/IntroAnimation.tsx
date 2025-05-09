@@ -1,4 +1,4 @@
-// src/components/animations/IntroAnimation.tsx - Fixed with transient props
+// src/components/animations/IntroAnimation.tsx - Fixed with proper text centering
 import React, { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import styled, { keyframes, css } from 'styled-components';
@@ -12,7 +12,7 @@ interface IntroAnimationProps {
 
 // Constants
 const POSITION = {
-  VERTICAL_ADJUSTMENT_TITLE: "-22vh",
+  VERTICAL_ADJUSTMENT_TITLE: "-20vh", // Adjusted for better centering
   VERTICAL_ADJUSTMENT_SUBTITLE: "-25vh",
   HORIZONTAL_ADJUSTMENT: "12.5%"
 };
@@ -106,6 +106,9 @@ const Container = styled.div<{ $darkMode?: boolean; $lightTheme?: boolean }>`
   color: ${props => props.$darkMode ? '#fff' : '#000'};
   overflow: hidden;
   transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+  display: flex; /* Add flexbox to help with centering */
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
 `;
 
 const ProfileImage = styled(motion.img)`
@@ -150,9 +153,10 @@ const LogoWrapper = styled(motion.div)<{
   }
 `;
 
+// Updated for better vertical centering
 const CenteredTextContainer = styled.div`
   position: fixed;
-  top: 40%;
+  top: 45%; /* Adjusted from 40% to 45% for better centering */
   left: 50%;
   transform: translate(-50%, -50%);
   width: auto;
@@ -160,14 +164,14 @@ const CenteredTextContainer = styled.div`
   z-index: 20;
   
   @media (max-width: 768px) {
-    top: 35%;
+    top: 40%;
   }
 `;
 
-// Updated subtitle container with simpler, slightly blurred background
+// Updated subtitle container with consistent gap from main title
 const SubtitleTextContainer = styled.div`
   position: fixed;
-  top: calc(40% + 9vh);
+  top: calc(45% + 9.5vh); /* Adjusted to maintain consistent gap from main title */
   left: 50%;
   transform: translateX(-50%);
   width: auto;
@@ -181,7 +185,7 @@ const SubtitleTextContainer = styled.div`
   transition: color 0.4s ease-in-out;
   
   @media (max-width: 768px) {
-    top: calc(35% + 9vh);
+    top: calc(40% + 9vh);
     font-size: 1.1rem;
     max-width: 95%;
   }

@@ -194,6 +194,60 @@ const buttonsVariants = {
 
 // Home Section Component
 const HomeSection: React.FC<HomeSectionProps> = ({ id, darkMode, hideHeader }) => {
+  // Create a properly scoped navigation handler to services
+  const navigateToServices = () => {
+    // Using custom event to trigger parent navigation
+    const event = new CustomEvent('navigateToSection', { 
+      detail: { sectionId: 'services' } 
+    });
+    document.dispatchEvent(event);
+  };
+
+  // Create a properly scoped navigation handler to contact
+  const navigateToContact = () => {
+    // Using custom event to trigger parent navigation
+    const event = new CustomEvent('navigateToSection', { 
+      detail: { sectionId: 'contact' } 
+    });
+    document.dispatchEvent(event);
+  };
+
+  // Set up event listener for section navigation
+  React.useEffect(() => {
+    const handleCustomNavigation = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const sectionId = customEvent.detail.sectionId;
+      
+      // Map section IDs to their indices in the main navigation
+      const sectionIndices = {
+        'home': 0,
+        'services': 1,
+        'portfolio': 2,
+        'contact': 3,
+        'about': 4
+      };
+      
+      // Get the index for the target section
+      const sectionIndex = sectionIndices[sectionId as keyof typeof sectionIndices];
+      
+      if (sectionIndex !== undefined) {
+        console.log(`Navigating from Home to section: ${sectionId}, index: ${sectionIndex}`);
+        
+        // Dispatch event to the App component
+        const navEvent = new CustomEvent('appNavigate', { 
+          detail: { sectionIndex: sectionIndex } 
+        });
+        document.dispatchEvent(navEvent);
+      }
+    };
+
+    document.addEventListener('navigateToSection', handleCustomNavigation);
+
+    return () => {
+      document.removeEventListener('navigateToSection', handleCustomNavigation);
+    };
+  }, []);
+
   return (
     <ViewportSection
       id={id}
@@ -230,11 +284,17 @@ const HomeSection: React.FC<HomeSectionProps> = ({ id, darkMode, hideHeader }) =
           animate="visible"
           variants={buttonsVariants}
         >
-          <PrimaryButton $darkMode={darkMode} onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}>
+          <PrimaryButton 
+            $darkMode={darkMode} 
+            onClick={navigateToServices}
+          >
             Explore Services
           </PrimaryButton>
           
-          <SecondaryButton $darkMode={darkMode} onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}>
+          <SecondaryButton 
+            $darkMode={darkMode} 
+            onClick={navigateToContact}
+          >
             Get in Touch
           </SecondaryButton>
         </CtaButtonsContainer>

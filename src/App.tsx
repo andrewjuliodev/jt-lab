@@ -64,6 +64,8 @@ const VerticalScrollContainer = styled.div<VerticalScrollContainerProps>`
     : 'transform 1.2s cubic-bezier(0.645, 0.045, 0.355, 1.000)'};
   will-change: transform; /* Performance optimization */
   touch-action: pan-x; /* Allow horizontal scrolling on touch devices */
+  transform-style: preserve-3d; /* Better performance for transform */
+  -webkit-backface-visibility: hidden; /* Fix for some mobile browsers */
 `;
 
 interface SectionWrapperProps {
@@ -203,7 +205,7 @@ const App: React.FC = () => {
   const [showDatenschutz, setShowDatenschutz] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   
-  // Define sections
+  // Define sections - using consistent IDs
   const realSections = [
     { id: 'home', component: HomeSection },
     { id: 'services', component: ServicesSection },
@@ -278,6 +280,7 @@ const App: React.FC = () => {
     
     if (realSections[realIndex]) {
       setActiveSection(realSections[realIndex].id);
+      console.log(`Active section updated to: ${realSections[realIndex].id} (index ${realIndex})`);
     }
     
     // Reset transitioning state after animation completes
@@ -311,7 +314,28 @@ const App: React.FC = () => {
       
       return () => clearTimeout(timer);
     }
-  }, [currentSectionIndex, isTransitioning, realSections, sections.length, showImpressum, showDatenschutz]);
+  }, [currentSectionIndex, isTransitioning, realSections, sections.length, showImpressum, showDatenschutz, showDisclaimer]);
+  
+  // Add event listener for custom navigation events from child components
+  useEffect(() => {
+    const handleAppNavigate = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const sectionIndex = customEvent.detail.sectionIndex;
+      
+      if (sectionIndex >= 0 && sectionIndex < realSections.length) {
+        // Add 1 to account for clone at beginning
+        const targetIndex = sectionIndex + 1;
+        console.log(`App navigation event received, navigating to section index: ${sectionIndex}, target index: ${targetIndex}`);
+        handleNavigation(targetIndex);
+      }
+    };
+    
+    document.addEventListener('appNavigate', handleAppNavigate);
+    
+    return () => {
+      document.removeEventListener('appNavigate', handleAppNavigate);
+    };
+  }, []);
 
   // When main content becomes visible, update body class
   useEffect(() => {
@@ -330,6 +354,8 @@ const App: React.FC = () => {
     if (newIndex === currentSectionIndex || isTransitioning) {
       return;
     }
+    
+    console.log(`Navigating to index: ${newIndex}`);
     
     // Set transitioning state
     setIsTransitioning(true);
@@ -374,7 +400,7 @@ const App: React.FC = () => {
     return () => {
       window.removeEventListener('wheel', handleWheel);
     };
-  }, [mainContentVisible, currentSectionIndex, isTransitioning, showImpressum, showDatenschutz]);
+  }, [mainContentVisible, currentSectionIndex, isTransitioning, showImpressum, showDatenschutz, showDisclaimer]);
   
   // Handle touch events for mobile swipe
   useEffect(() => {
@@ -420,7 +446,7 @@ const App: React.FC = () => {
       container.removeEventListener('touchmove', handleTouchMove);
       container.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [mainContentVisible, currentSectionIndex, isTransitioning, showImpressum, showDatenschutz]);
+  }, [mainContentVisible, currentSectionIndex, isTransitioning, showImpressum, showDatenschutz, showDisclaimer]);
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -472,6 +498,8 @@ const App: React.FC = () => {
     setShowDatenschutz(false);
     setShowDisclaimer(false);
     
+    console.log(`Navigating to real section index: ${realIndex}, section ID: ${realSections[realIndex].id}`);
+    
     // Convert to extended array index
     const extendedIndex = getRealToExtendedIndex(realIndex);
     handleNavigation(extendedIndex);
@@ -498,10 +526,14 @@ const App: React.FC = () => {
     // Close legal pages if open
     setShowImpressum(false);
     setShowDatenschutz(false);
+    setShowDisclaimer(false);
     
     const realIndex = realSections.findIndex(section => section.id === sectionId);
     if (realIndex !== -1) {
+      console.log(`Navigating to section by ID: ${sectionId}, real index: ${realIndex}`);
       navigateToRealSection(realIndex);
+    } else {
+      console.warn(`Section ID not found: ${sectionId}`);
     }
   };
 
@@ -527,6 +559,7 @@ const App: React.FC = () => {
 
   // Handle navbar section change
   const handleSectionChange = (sectionId: string) => {
+    console.log(`Section change requested: ${sectionId}`);
     navigateToSectionById(sectionId);
   };
 
@@ -568,7 +601,9 @@ const App: React.FC = () => {
     console.log("- fadeTransitionActive:", fadeTransitionActive);
     console.log("- mainContentVisible:", mainContentVisible);
     console.log("- darkMode:", darkMode);
-  }, [introComplete, fadeTransitionActive, mainContentVisible, darkMode]);
+    console.log("- activeSection:", activeSection);
+    console.log("- currentSectionIndex:", currentSectionIndex);
+  }, [introComplete, fadeTransitionActive, mainContentVisible, darkMode, activeSection, currentSectionIndex]);
 
   return (
     <>
@@ -651,7 +686,8 @@ const App: React.FC = () => {
                   <NavDots>
                     {realSections.map((section, index) => {
                       // Calculate if this dot should be active based on the current extended index
-                      const isActive = index + 1 === currentSectionIndex || 
+                      const isActive = 
+                        (index + 1 === currentSectionIndex) || 
                         (index === 0 && currentSectionIndex === sections.length - 1) ||
                         (index === realSections.length - 1 && currentSectionIndex === 0);
                         

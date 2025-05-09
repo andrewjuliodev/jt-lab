@@ -154,6 +154,51 @@ const AboutSection: React.FC<AboutSectionProps> = ({
   onDataProtectionClick,
   onDisclaimerClick
 }) => {
+  // Create a properly scoped navigation handler to contact section
+  const navigateToContact = () => {
+    // Using custom event to trigger parent navigation
+    const event = new CustomEvent('navigateToSection', { 
+      detail: { sectionId: 'contact' } 
+    });
+    document.dispatchEvent(event);
+  };
+
+  // Set up event listener for section navigation
+  React.useEffect(() => {
+    const handleCustomNavigation = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const sectionId = customEvent.detail.sectionId;
+      
+      // Map section IDs to their indices in the main navigation
+      const sectionIndices = {
+        'home': 0,
+        'services': 1,
+        'portfolio': 2,
+        'contact': 3,
+        'about': 4
+      };
+      
+      // Get the index for the target section
+      const sectionIndex = sectionIndices[sectionId as keyof typeof sectionIndices];
+      
+      if (sectionIndex !== undefined) {
+        console.log(`Navigating from About to section: ${sectionId}, index: ${sectionIndex}`);
+        
+        // Dispatch event to the App component
+        const navEvent = new CustomEvent('appNavigate', { 
+          detail: { sectionIndex: sectionIndex } 
+        });
+        document.dispatchEvent(navEvent);
+      }
+    };
+
+    document.addEventListener('navigateToSection', handleCustomNavigation);
+
+    return () => {
+      document.removeEventListener('navigateToSection', handleCustomNavigation);
+    };
+  }, []);
+
   return (
     <ViewportSection 
       id={id} 
@@ -181,12 +226,12 @@ const AboutSection: React.FC<AboutSectionProps> = ({
       </ContentContainer>
       
       <ButtonContainer>
-        <Button $darkMode={darkMode} onClick={() => {
-          const contactSection = document.getElementById('contact');
-          if (contactSection) {
-            contactSection.scrollIntoView({ behavior: 'smooth' });
-          }
-        }}>Contact Me</Button>
+        <Button 
+          $darkMode={darkMode} 
+          onClick={navigateToContact}
+        >
+          Contact Me
+        </Button>
         <Button 
           $darkMode={darkMode} 
           onClick={onLegalNoticeClick}
